@@ -1,36 +1,69 @@
 function Map(w, h) {
+    var inst = this;
     this.w = w; this.h = h;
     this.renderX = 0;
     this.renderY = 0;
     this.map = {};
+    this.fovMap = {};
+    this.memory = {};
+    this.fov = new ROT.FOV.PreciseShadowcasting(function(x,y) {
+        var t = inst.at(x,y);
+        return (t ? !t.opaque : false);
+    });
     this.mobs = [];
 }
 Map.prototype.at = function(x,y) {
     key = x + ',' + y;
     return this.map[key];
 };
-Map.prototype.solid = function(x,y) {
-    return this.at(x,y).solid;
-};
 Map.prototype.write = function(x,y, idx) {
     key = x + ',' + y;
     this.map[key] = tiles[idx];
 };
+// helper lookups
+Map.prototype.solid = function(x,y) {
+    return this.at(x,y).solid;
+};
+Map.prototype.updateFov = function(actor) {
+    var inst = this;
+    this.fovMap = {};
+    this.mobs.forEach(m => m.visible = false);
+    this.fov.compute(actor.x, actor.y, Game.VISION_RADIUS, function(x,y,r,vis) {
+        inst.fovMap[x+','+y] = [r,vis];
+        // check for visible mobs
+        var m = inst.mobAt(x,y);
+        if (m) m.visible = true;
+        // remember stuff
+        if (actor == Game.player) inst.memory[x+','+y] = inst.at(x,y);
+    });
+};
 //-------------------------------------
 // rendering and stuff
-Map.prototype.render = function(display, drawMobs) {
-    for (var key in this.map) {
+Map.prototype.render = function(display, opts) {
+    var mapper;
+    // only show the FOV unless we asked for the whole map.
+    mapper = (opts && opts.showAll ? this.map : this.fovMap);
+    // if we want memory, then show it first.
+    if (opts && opts.memory) {
+        for (var key in this.memory) {
+            var pa = key.split(',');
+            var x = parseInt(pa[0]), y = parseInt(pa[1]);
+            var tiles = this.memory[key];
+            if (tiles === undefined) continue;
+            display.draw(x+this.renderX, y+this.renderY, tiles.glyph, 'rgb(64,64,64)');
+        }
+    }
+    // go through the map, rendering tiles.
+    for (var key in mapper) {
         var pa = key.split(',');
         var x = parseInt(pa[0]);
         var y = parseInt(pa[1]);
         var tiles = this.map[key];
-        if (tiles === undefined) {
-            display.draw(x+this.renderX,y+this.renderY, '@', 'brightred', 'red');
-            console.warn('blank tile:', tiles, x,y); continue;
-        }
+        if (tiles === undefined) continue;
         display.draw(x+this.renderX,y+this.renderY, tiles.glyph, tiles.color);
     }
-    if (drawMobs) this.drawMobs(display);
+    // draw mobs if asked to.
+    if (opts && opts.drawMobs) this.drawMobs(display, opts);
 };
 Map.prototype.updateTile = function(display,x,y) {
     var t = this.map[x + ',' + y];
@@ -109,9 +142,14 @@ Map.prototype.removeMob = function(mob) {
     }
     return true;
 };
-Map.prototype.drawMobs = function(display) {
+Map.prototype.drawMobs = function(display, opts) {
     for (i = 0; i < this.mobs.length; i++) {
         var m = this.mobs[i];
-        m.render(display, m.x+this.renderX, m.y+this.renderY);
+        if ((opts && opts.showAll) || m.visible)
+            m.render(display, m.x+this.renderX, m.y+this.renderY);
     }
+};
+Map.prototype.mobAt = function(x,y) {
+    var m = this.mobs.find(dude => (dude.x == x && dude.y == y));
+    return m;
 };

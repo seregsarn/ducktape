@@ -1,6 +1,7 @@
 var MapGen = {
     generateMap: function() {
         var map = new Map(80,24);
+        // first, dig out the map.
         var digger = new ROT.Map.Digger(80,24,{
             dugPercentage: 0.85
         });
@@ -8,14 +9,14 @@ var MapGen = {
             if (value) return;
             map.write(x,y, tile('CORR'));
         };
+        digger.create(dig.bind(this));
+        // decorate the rooms accordingly.
+        var rooms = digger.getRooms();
         var drawDoor = function(x,y) {
             map.write(x,y, tile('DOOR'));
         };
-        digger.create(dig.bind(this));
-        var rooms = digger.getRooms();
         for (var i = 0; i < rooms.length; i++) {
             var room = rooms[i];
-//console.log("room ", i, room);
             var x,y;
             for (x = room.getLeft()-1; x <= room.getRight()+1; x++) {
                 for (y = room.getTop()-1; y <= room.getBottom()+1; y++) {
@@ -29,7 +30,9 @@ var MapGen = {
                 }
             }
             room.getDoors(drawDoor.bind(this));
+            // TODO: add furniture/items/mobs/etc to rooms here.
         }
+        // make IND_WALL into pretty walls.
         map.wallify();
         return map;
     }

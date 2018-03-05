@@ -9,11 +9,20 @@ function Player(name) {
 }
 Player.prototype = Object.create(Actor.prototype);
 Player.prototype.constructor = Player;
+Player.prototype.a = function() {
+    return "you";
+}
+Player.prototype.the = function() {
+    return "you";
+}
 //----------------
 // act() function for rotjs engine. It stalls the engine until the command queue is nonempty.
 Player.prototype.act = function() {
     var player = this;
     var res;
+    if (this.map) {
+        this.map.updateFov(this);
+    }
     Game.render();
     //console.log("player is acting:", this);
     this.stall = new Promise(function(resolve, reject) {
@@ -26,6 +35,8 @@ Player.prototype.act = function() {
                     if (res) {
                         resolve(cmd);
                         return; // don't reschedule
+                    } else {
+                        Game.render();
                     }
                 } else {
                     console.error('Unimplemented command: ', cmd.type, " => ", cmd);
@@ -55,54 +66,69 @@ Player.prototype.handleEvent = function(ev) {
     for (var name in ROT) {
         if (ROT[name] == ev.keyCode && name.indexOf("VK_") == 0) vk = name;
     }
+    // prompts can be generated if you need more data to issue a command, like a direction or whatever.
     if (this.promptData !== null) {
         var pd = this.promptData;
+        // each prompt gets its own switch block.
         switch (pd.type) {
+            // we're asking for a direction.
             case 'dir':
-                if (vk == 'VK_W' || vk == 'VK_UP') {
-                    pd.resolve('north');
-                    this.promptData = null;
-                    return;
-                } else if (vk == 'VK_S' || vk == 'VK_DOWN') {
-                    pd.resolve('south');
-                    this.promptData = null;
-                    return;
-                } else if (vk == 'VK_A' || vk == 'VK_LEFT') {
-                    pd.resolve('west');
-                    this.promptData = null;
-                    return;
-                } else if (vk == 'VK_D' || vk == 'VK_RIGHT') {
-                    pd.resolve('east');
-                    this.promptData = null;
-                    return;
+                if (vk == 'VK_W' || vk == 'VK_UP' || vk == 'VK_NUMPAD8') {
+                    pd.resolve('north'); this.promptData = null; return;
+                } else if (vk == 'VK_S' || vk == 'VK_DOWN' || vk == 'VK_NUMPAD2') {
+                    pd.resolve('south'); this.promptData = null; return;
+                } else if (vk == 'VK_A' || vk == 'VK_LEFT' || vk == 'VK_NUMPAD4') {
+                    pd.resolve('west'); this.promptData = null; return;
+                } else if (vk == 'VK_D' || vk == 'VK_RIGHT' || vk == 'VK_NUMPAD6') {
+                    pd.resolve('east'); this.promptData = null; return;
+                } else if (vk == 'VK_NUMPAD7') {
+                    pd.resolve('northwest'); this.promptData = null; return;
+                } else if (vk == 'VK_NUMPAD9') {
+                    pd.resolve('northeast'); this.promptData = null; return;
+                } else if (vk == 'VK_NUMPAD1') {
+                    pd.resolve('southwest'); this.promptData = null; return;
+                } else if (vk == 'VK_NUMPAD3') {
+                    pd.resolve('southeast'); this.promptData = null; return;
+                } else if ((vk == 'VK_DECIMAL' || vk == 'VK_PERIOD') && pd.allowSelf) {
+                    pd.resolve('self'); this.promptData = null; return;
                 }
             break;
+            // don't know what we're asking for. :O
             default:
                 console.error('Unimplemented prompt: ', pd);
-                pd.reject({ msg: 'Unimplemented prompt', obj: pd });
+                pd.reject({ msg: 'Unimplemented prompt', obj: pd, event: ev });
                 this.promptData = null;
+                return;
             break;
         }
-        if (vk == 'VK_ESCAPE') {
-            pd.reject();
+        // these are here as get-out defaults for all prompts; if any of them are handled in the prompt-specific handler above then we just never get here.
+        if (vk == 'VK_ESCAPE' || vk == 'VK_RETURN' || vk == 'VK_SPACE') {
+            //pd.reject();
+            Message.log("Never mind.");
             this.promptData = null;
         }
         return;
     }
-    //console.log("down:", ev.keyCode, "=>", vk);
-    if (vk == 'VK_PERIOD') {
-        //console.log("pushing wait onto queue", this.commands);
+    // ordinary command kickoffs.
+    if (vk == 'VK_PERIOD' || vk == 'VK_DECIMAL') { // wait
         this.commands.push({ type: 'wait' });
-    }
-    if (vk == 'VK_W' || vk == 'VK_UP') {
+    } else if (vk == 'VK_W' || vk == 'VK_UP' || vk == 'VK_NUMPAD8') { // movement
         this.commands.push({ type: 'move', dir: 'north' });
-    } else if (vk == 'VK_S' || vk == 'VK_DOWN') {
+    } else if (vk == 'VK_S' || vk == 'VK_DOWN' || vk == 'VK_NUMPAD2') { // ""
         this.commands.push({ type: 'move', dir: 'south' });
-    } else if (vk == 'VK_A' || vk == 'VK_LEFT') {
+    } else if (vk == 'VK_A' || vk == 'VK_LEFT' || vk == 'VK_NUMPAD4') {
         this.commands.push({ type: 'move', dir: 'west' });
-    } else if (vk == 'VK_D' || vk == 'VK_RIGHT') {
+    } else if (vk == 'VK_D' || vk == 'VK_RIGHT' || vk == 'VK_NUMPAD6') {
         this.commands.push({ type: 'move', dir: 'east' });
-    } else if (vk == 'VK_C') {
+    } else if (vk == 'VK_NUMPAD7') {
+        this.commands.push({ type: 'move', dir: 'northwest' });
+    } else if (vk == 'VK_NUMPAD9') {
+        this.commands.push({ type: 'move', dir: 'northeast' });
+    } else if (vk == 'VK_NUMPAD1') {
+        this.commands.push({ type: 'move', dir: 'southwest' });
+    } else if (vk == 'VK_NUMPAD3') {
+        this.commands.push({ type: 'move', dir: 'southeast' });
+    } else if (vk == 'VK_C') { // close door
         this.prompt({
             message: "In what direction?",
             type: 'dir'
@@ -110,10 +136,17 @@ Player.prototype.handleEvent = function(ev) {
             player.commands.push({
                 type: 'close', dir: dir
             });
-        }).catch(function(err) {
+        });
+        /*.catch(function(err) {
             if (err && err.msg) Message.log(err.msg);
             else Message.log('Never mind.');
         });
+        */
+    } else if ((vk == 'VK_SLASH' && ev.shiftKey) || vk == 'VK_F1') { // halp
+        if (vk == 'VK_F1') ev.preventDefault();
+        Message.log("FIXME: help screen");
+    } else {
+//console.log("VK: ",vk);
     }
 };
 //-----------------------
@@ -130,8 +163,13 @@ Player.prototype.cmd_move = function(cmd) {
         case 'south': dx = 0; dy = 1; break;
         case 'east': dx = 1; dy = 0; break;
         case 'west': dx = -1; dy = 0; break;
+        case 'northeast': dx = 1; dy = -1; break;
+        case 'southeast': dx = 1; dy = 1; break;
+        case 'northwest': dx = -1; dy = -1; break;
+        case 'southwest': dx = -1; dy = 1; break;
         default: dx = 0; dy = 0; break;
     }
+    
     return Actor.prototype.move.call(this, dx, dy);
 };
 Player.prototype.cmd_close = function(cmd) {
@@ -141,6 +179,10 @@ Player.prototype.cmd_close = function(cmd) {
         case 'south': dx = 0; dy = 1; break;
         case 'east': dx = 1; dy = 0; break;
         case 'west': dx = -1; dy = 0; break;
+        case 'northeast': dx = 1; dy = -1; break;
+        case 'southeast': dx = 1; dy = 1; break;
+        case 'northwest': dx = -1; dy = -1; break;
+        case 'southwest': dx = -1; dy = 1; break;
         default: dx = 0; dy = 0; break;
     }
     tx = this.x + dx; ty = this.y + dy;

@@ -1,12 +1,12 @@
 var tiles = [
-    {name: 'FLOOR', glyph: '.', color: 'silver', solid: false},
-    {name: 'CORR', glyph: '#', color: 'grey', solid: false},
-    {name: 'DOOR', glyph: '+', color: 'brown', solid: true},
-    {name: 'OPENDOOR', glyph: '/', color: 'brown', solid: false},
-    {name: 'IND_WALL', glyph: '*', color: 'silver', solid: true},
-    {name: 'HWALL', glyph: '-', color: 'silver', solid: true},
-    {name: 'VWALL', glyph: '|', color: 'silver', solid: true},
-    {name: 'CWALL', glyph: '+', color: 'silver', solid: true}
+    {name: 'FLOOR', glyph: '.', color: 'silver', solid: false, opaque: false },
+    {name: 'CORR', glyph: '#', color: 'grey', solid: false, opaque: false },
+    {name: 'DOOR', glyph: '+', color: 'brown', solid: true, opaque: true },
+    {name: 'OPENDOOR', glyph: '/', color: 'brown', solid: false, opaque: false },
+    {name: 'IND_WALL', glyph: '*', color: 'silver', solid: true, opaque: true },
+    {name: 'HWALL', glyph: '-', color: 'silver', solid: true, opaque: true },
+    {name: 'VWALL', glyph: '|', color: 'silver', solid: true, opaque: true },
+    {name: 'CWALL', glyph: '+', color: 'silver', solid: true, opaque: true }
 ];
 tiles.forEach(function(elt) {
     tiles[elt.name] = elt;
