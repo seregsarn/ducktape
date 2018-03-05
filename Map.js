@@ -14,6 +14,8 @@ Map.prototype.write = function(x,y, idx) {
     key = x + ',' + y;
     this.map[key] = tiles[idx];
 };
+//-------------------------------------
+// rendering and stuff
 Map.prototype.render = function(display) {
     for (var key in this.map) {
         var pa = key.split(',');
@@ -36,6 +38,8 @@ Map.prototype.updateTile = function(display,x,y) {
         display.draw(x,y, ' ');
     }
 };
+//-------------------------------------
+// generation functions and helpers
 Map.prototype._neighbors = function(x,y) {
     var n = [];
     var i, j;
@@ -53,23 +57,14 @@ Map.prototype.wallify = function() {
     var i, j;
     for (j = 0; j < this.h; j++) {
         for (i = 0; i < this.w; i++) {
-//if (i > 29 && i < 34 && j >= 0 && j < 2)
-//console.log(i,j,this.at(i,j));
             if (this.at(i,j) === undefined || !is_wall(this.at(i,j))) continue;
             var nl = this._neighbors(i,j);
             var v = false, h = false;
             var w = '';
-//if (i > 29 && i < 34 && j >= 0 && j < 2)
-//console.log('=>', nl);
             nl.forEach(function (n) {
                 if (links_walls(n[2])) {
-//if (i > 29 && i < 34 && j >= 0 && j < 2)
-//console.log('=> block: ', n, n[0] != 0, n[1] != 0);
                     if (n[1] == 0 && n[0] != 0) h = true;
                     if (n[0] == 0 && n[1] != 0) v = true;
-//                } else {
-//if (i > 29 && i < 34 && j >= 0 && j < 2)
-//console.log('=> unblocked', n, n[0] != 0, n[1] != 0);
                 }
             });
             if (h) w = 'HWALL';
@@ -79,11 +74,42 @@ Map.prototype.wallify = function() {
         }
     }
 };
+Map.prototype.findLocation = function(tile) {
+    var tries = 0;
+    var x, y;
+    do {
+        x = Math.round(ROT.RNG.getUniform() * this.w);
+        y = Math.round(ROT.RNG.getUniform() * this.h);
+    } while (tries++ < 1000 && this.at(x,y) != tile);
+    return [x,y];
+};
+//-------------------------
+// mob handling
 Map.prototype.addMob = function(mob) {
     if (!(mob instanceof Actor)) return false;
     if (this.mobs.includes(mob)) return true;
-//console.log('mob:', mob,mob.constructor);
+    mob.map = this;
     this.mobs.push(mob);
     return true;
 };
-
+Map.prototype.putMob = function(mob, x,y) {
+    if (!(mob instanceof Actor)) return false;
+    if (!this.addMob(mob)) return false;
+    mob.x = x;
+    mob.y = y;
+    return true;
+};
+Map.prototype.removeMob = function(mob) {
+    var idx = this.mobs.findIndex(item => mob.id == item.id);
+    if (idx != -1) {
+        this.mobs.splice(idx, 1);
+        mob.map = null;
+    }
+    return true;
+};
+Map.prototype.drawMobs = function(display) {
+    for (i = 0; i < this.mobs.length; i++) {
+        var m = this.mobs[i];
+        m.render(display, m.x, m.y);
+    }
+};
