@@ -1,5 +1,7 @@
 function Map(w, h) {
     this.w = w; this.h = h;
+    this.renderX = 0;
+    this.renderY = 0;
     this.map = {};
     this.mobs = [];
 }
@@ -16,26 +18,26 @@ Map.prototype.write = function(x,y, idx) {
 };
 //-------------------------------------
 // rendering and stuff
-Map.prototype.render = function(display) {
+Map.prototype.render = function(display, drawMobs) {
     for (var key in this.map) {
         var pa = key.split(',');
         var x = parseInt(pa[0]);
         var y = parseInt(pa[1]);
         var tiles = this.map[key];
         if (tiles === undefined) {
-            display.draw(x,y, '@', 'brightred', 'red');
+            display.draw(x+this.renderX,y+this.renderY, '@', 'brightred', 'red');
             console.warn('blank tile:', tiles, x,y); continue;
         }
-        display.draw(x,y, tiles.glyph, tiles.color);
-        
+        display.draw(x+this.renderX,y+this.renderY, tiles.glyph, tiles.color);
     }
+    if (drawMobs) this.drawMobs(display);
 };
 Map.prototype.updateTile = function(display,x,y) {
     var t = this.map[x + ',' + y];
     if (t !== undefined) {
-        display.draw(x,y, t.glyph, t.color);
+        display.draw(x+this.renderX,y+this.renderY, t.glyph, t.color);
     } else {
-        display.draw(x,y, ' ');
+        display.draw(x+this.renderX,y+this.renderY, ' ');
     }
 };
 //-------------------------------------
@@ -110,6 +112,6 @@ Map.prototype.removeMob = function(mob) {
 Map.prototype.drawMobs = function(display) {
     for (i = 0; i < this.mobs.length; i++) {
         var m = this.mobs[i];
-        m.render(display, m.x, m.y);
+        m.render(display, m.x+this.renderX, m.y+this.renderY);
     }
 };

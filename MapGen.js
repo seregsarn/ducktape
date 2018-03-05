@@ -1,7 +1,7 @@
 var MapGen = {
     generateMap: function() {
-        var map = new Map(80,25);
-        var digger = new ROT.Map.Digger(80,25,{
+        var map = new Map(80,24);
+        var digger = new ROT.Map.Digger(80,24,{
             dugPercentage: 0.85
         });
         var dig = function(x,y,value) {
