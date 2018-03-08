@@ -198,8 +198,11 @@ Player.prototype.cmd_move = function(cmd) {
         // TODO: pick up the item instead of just telling you you see it.
         Message.log("You see here %a%s".format(itm, itm.type.name=="Grapes of Yendor" ? "!":"."));
     }
-    // TODO: look at the square we just moved to and say things if appropriate, like "You see here an exit. Press SPACE to go through."
-    
+    // look at the square we just moved to and say things if appropriate.
+    var t = this.map.at(this.x, this.y);
+    if (t == tiles.EXIT) {
+        Message.log("You see an exit here. Press SPACE to go through.");
+    }
     return true;
 };
 Player.prototype.cmd_close = function(cmd) {

@@ -25,10 +25,11 @@ var blockers = [
         name: "methane pocket",
         traversal: ['torch', 'flint', ['fire arrows','bow']],
         directional: "no"
-    },{
+/*    },{
         name: "fog cloud",
         traversal: ['torch'],
         directional: "no"
+*/
 /*    },{
         name: "poison gas cloud",
         traversal: ['rebreather'],
@@ -46,6 +47,7 @@ var blockers = [
     }
 ];
 blockers.random = function() {
-    var idx = Math.floor(ROT.RNG.getUniform() * blockers.length);
-    return blockers[idx];
+    var b = blockers.choose();
+    if (b.count && b.count > 0) b = blockers.choose();
+    return b;
 };

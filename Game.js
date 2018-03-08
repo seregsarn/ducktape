@@ -2,6 +2,10 @@
 Array.prototype.shuffle = function() {
     this.sort(function() { return 0.5 - ROT.RNG.getUniform(); });
 };
+Array.prototype.choose = function() {
+    var idx = Math.floor(ROT.RNG.getUniform() * this.length);
+    return this[idx];
+};
 function Dice(count, size) {
     var acc = 0, i;
     for (i = 0; i < count; i++) {
@@ -40,7 +44,7 @@ var Game = {
         });
         document.body.appendChild(document.createElement('br'));
         document.body.appendChild(Message.historyWindow.getContainer());
-        this.world = new Dungeon(2);
+        this.world = new Dungeon(5);
         this.map = this.world.findLevelById(this.world.startAt);
         //this.map = this.world.areas[0];
 this.world.areas.forEach(m => m.magicMap());
