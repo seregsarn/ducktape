@@ -3,6 +3,7 @@ var Message = {
     historyWindow: null,
     history: [],
     historySize: 25,
+    isMore: false,
     expire: function() {
         this.history.forEach(function(elt) {
             elt.persist = false;
@@ -15,12 +16,30 @@ var Message = {
         }
     },
     log: function() {
-        var str = Array.from(arguments).join(',');
+        var str = Array.from(arguments).join('');
         this.clear();
         this.screen.drawText(0,0, str);
         console.log(str);
         this.history.push({text: str, persist: true});
         if (this.history.length > this.historySize) this.history.shift();
+    },
+    more: function() {
+        // TODO: implement a "--More--" type function
+        this.isMore = true;
+        Game.render();
+        Game.engine.lock();
+        document.addEventListener('keydown', function(ev) {
+            //console.log('More:', ev);
+            if (ev.keyCode == ROT.VK_SPACE) {
+                if (Game.player.dead) {
+                    // STUH!
+                    Game.screen.clear();
+                } else {
+                    Game.engine.unlock();
+                    this.isMore = false;
+                }
+            }
+        });
     },
     render: function() {
         if (this.history.length < 1) return;
@@ -33,6 +52,7 @@ var Message = {
                 lines += (lines != '' ? '  ':'') + h.text;
             }
         }
+        if (this.isMore) lines += "--More--";
         this.screen.drawText(0,0,lines);
     },
     renderHistory: function() {
@@ -57,12 +77,14 @@ function ActorMessage(actor, msg) {
     if (actor == Game.player) {
         Message.log(msg);
     } else {
-        // todo: visibility check
+        // visibility check
         if (actor.visible) Message.log(msg);
     }
 }
+// TODO: LocationMessage for things like doors opening and stuff that don't involve an actor directly
 
 // formatting stuff
+String.format.map.your = "your";
 String.format.map.the = "the";
 String.format.map.a = "a";
 String.format.map.verb = "verb";

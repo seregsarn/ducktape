@@ -7,7 +7,7 @@ var AI = {
         } while (dx == 0 && dy == 0);
         this.move(dx, dy);
         if (ROT.RNG.getPercentage() > 50) {
-            ActorMessage(this, "%The yelps!".format(this));
+            ActorMessage(this, "%The %{verb,yelp}!".format(this, this));
         }
         /*
         if (ROT.RNG.getPercentage() > 95) {
