@@ -6,6 +6,10 @@ Array.prototype.choose = function() {
     var idx = Math.floor(ROT.RNG.getUniform() * this.length);
     return this[idx];
 };
+Array.prototype.chooseIndex = function() {
+    var idx = Math.floor(ROT.RNG.getUniform() * this.length);
+    return idx;
+};
 function Dice(count, size) {
     var acc = 0, i;
     for (i = 0; i < count; i++) {
@@ -29,6 +33,7 @@ var Game = {
         this.time = new ROT.Scheduler.Speed();
         this.engine = new ROT.Engine(this.time);
         this.screen = new ROT.Display({
+            width: 80, height: 27,
             fontSize: 16,
             spacing: 1.1,
             //fontSize: 12,
@@ -62,5 +67,9 @@ this.world.areas.forEach(m => m.magicMap());
         this.map.render(this.screen, { drawMobs: true, drawItems: true, memory: true });
         Message.render();
         Message.renderHistory();
+        // status lines
+        this.screen.drawText(0,25,this.player.name + " the duck");
+        this.screen.drawText(0,26,"HP: " + this.player.hp + "/" + this.player.stats.maxhp);
+        this.screen.drawText(80 - this.map.name.length,25,this.map.name);
     }
 };
