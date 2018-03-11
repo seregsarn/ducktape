@@ -10,11 +10,13 @@ function Item(type) {
     this.x = this.y = 0;
 }
 Item.prototype.a = function() {
+    var paren = "";
     if (!this.type) return "an unknown object";
     if (this.type.artifact) return this.the();
+    if (this == Game.player.armor || this == Game.player.weapon) paren = " (equipped)"
     var nm = (this.type.adjective ? this.type.adjective + " " : "") + this.type.name;
-    if (nm.charAt(0).match(/[aeiou]/)) return 'an '+ nm;
-    return 'a ' + nm;
+    if (nm.charAt(0).match(/[aeiou]/)) return 'an '+ nm + paren;
+    return 'a ' + nm + paren;
 };
 Item.prototype.the = function() {
     if (!this.type) return "the unknown object";

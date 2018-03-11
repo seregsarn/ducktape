@@ -30,7 +30,7 @@ var Message = {
         Game.engine.lock();
         document.addEventListener('keydown', function(ev) {
             //console.log('More:', ev);
-            if (ev.keyCode == ROT.VK_SPACE) {
+            if (ev.keyCode == ROT.VK_SPACE || ev.keyCode == ROT.VK_RETURN || ev.keyCode == ROT.VK_ENTER) {
                 if (Game.player.dead) {
                     // STUH!
                     Game.screen.clear();

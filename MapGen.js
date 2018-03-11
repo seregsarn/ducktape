@@ -55,33 +55,72 @@ var MapGen = {
         return pt;
     },
     findSpotInCell: function(map, cell) {
-        var tries = 0;
+        var tries = 0, reject;
         var x,y, t;
         do {
+            reject = false;
             x = Math.floor(ROT.RNG.getUniform() * cell.w);
             y = Math.floor(ROT.RNG.getUniform() * cell.h);
             t = map.at(cell.x + x, cell.y + y);
-        } while (++tries < 1000 && (t === undefined || t.solid));
-        return [x,y];
+            if (t === undefined) reject = true;
+                else if (t.solid) reject = true;
+        } while (++tries < 1000 && reject );
+        return [cell.x + x,cell.y + y];
+    },
+    cellForSpot: function (pt) {
+//console.log(pt, this.cells);
+        var cx = Math.floor(pt[0] / this.cells.cw);
+        var cy = Math.floor(pt[1] / this.cells.ch);
+//console.log("cxy: ", cx,cy);
+        return this.cellmap[(cy*this.cells.nx)+cx];
     },
     putRoadblocksOnMap: function(map, hazard) {
-        console.log("add ", hazard.name, " to ", map);
+//        console.log("add ", hazard.name, " to ", map);
         var p1, p2;
+        var c1, c2;
         var i, j, k;
+        // pick the target points.
         p1 = map.exits[0].loc;
         if (map.reward !== undefined) {
             p2 = [map.reward.x, map.reward.y];
         } else {
             p2 = map.exits[1].loc;
         }
-        console.log("=> between ",p1, " and ", p2);
-        if (hazard.name == "big chasm with cable") {
+        // find the cells
+//        console.log("---------\nroadblocks");
+//        console.log('cellmap: ', this.cellmap);
+        c1 = this.cellForSpot(p1);
+        c2 = this.cellForSpot(p2);
+//console.log("=> between ",c1, " and ", c2);
+        // first major type: fields of stuff that block the path.
+        if (["CHASM","BIGCHASM","LAVA","RAZORGRASS"].includes(hazard.code)) {
+            var tiletype = {
+                CHASM: tiles.CHASM,
+                BIGCHASM: tiles.CHASM,
+                LAVA: tiles.LAVA,
+                RAZORGRASS: tiles.RAZORGRASS
+            }[hazard.code];
             // start at exit one, walk to exit 2. count the steps.
             var len = 0;
             var passable = function(x,y) { return map.at(x,y) !== undefined ? !map.at(x,y).solid : false; };
-            var pather = new ROT.Path.AStar(p1[0], p1[1], passable);
-            pather.compute(p2[0], p2[1], function(x,y) { len += 1; });
-            console.log("steps between start and goal:", len);
+            var costfn = function(x,y) {
+                var t = map.at(x,y);
+                if (t === undefined || t.solid) return 1000;
+                return 1;
+            };
+            while (len <= 0) {
+                len = 0;
+                var pather = new ROT.Path.AStar2(p1[0], p1[1], passable, { cost: costfn });
+                pather.compute(p2[0], p2[1], function(x,y) {
+                    if (!map.at(x,y) || map.at(x,y).solid) map.write(x,y,tiles.MIDCAVEFLOOR);
+                    len += 1;
+                });
+//console.log("steps between ",p1," and ",p2,":", len);
+                if (len <= 0) {
+                    map.exits[0].loc = this.findExitSpot(map, c1);
+                    p1 = map.exits[0].loc;
+                }
+            }
             // divide that number in half to get the threshold.
             // make a dijkstra map of the entire level based on distance from the goal.
             dmap1 = new ROT.Path.Dijkstra(p1[0],p1[1], passable);
@@ -93,31 +132,128 @@ var MapGen = {
                     dmap1.compute(i,j, function(x,y) { dval1 += 1; });
                     dmap2.compute(i,j, function(x,y) { dval2 += 1; });
                     if (dval2 == Math.floor(len / 2) && Math.abs(dval1 - dval2) < 3) {
-                        map.write(i,j, tiles.LOWCAVEFLOOR);
+                        map.write(i,j, tiletype);
                     }
                 }
             }
             // expand the chasm till it's too big for the grapplebow to get you across.
-            for (k = 0; k < 4; k++) {
+            //*
+            var patchSize = 0;
+            var keepGoing;
+            do {
+                keepGoing = true;
                 var expansion = [];
                 for (j = 0; j < map.h; j++) {
                     for (i = 0; i < map.w; i++) {
                         var t = map.at(i,j);
-                        if (t !== undefined && t == tiles.LOWCAVEFLOOR) {
+                        if (t !== undefined && t == tiletype) {
                             map._neighbors(i,j).forEach(function(n) {
+                                if (hazard.code != "CHASM" && hazard.code != "BIGCHASM" && Math.round(ROT.RNG.getUniform()) == 1) return;
                                 if (n[2] == tiles.MIDCAVEFLOOR)
                                     expansion.push([i+n[0], j+n[1]]);
                             });
                         }
                     }
                 }
-                expansion.forEach(function(e) { map.write(e[0],e[1], tiles.LOWCAVEFLOOR); });
+//if (hazard.code == 'BIGCHASM') console.log("patch iter ", patchSize, ": ", expansion);
+                expansion.forEach(function(e) { map.write(e[0],e[1], tiletype); });
+                var pather = new ROT.Path.AStar2(p1[0], p1[1], function(x,y) {
+                    var t = map.at(x,y);
+                    if (t === undefined || t.solid) return false;
+                    if (t == tiles.CHASM || t == tiles.CHASMCABLE || t == tiles.POST) return false;
+                    if (t == tiles.LAVA || t == tiles.RAZORGRASS) return false;
+                    return true;
+                });
+                len = 0;
+                pather.compute(p2[0], p2[1], function(x,y) { len += 1 });
+                patchSize++;
+                if (len != 0) keepGoing = true;
+                // only expand a little bit if we're doing a regular chasm.
+                if ("CHASM" == hazard.code && patchSize >= 1) keepGoing = false;
+                if ("BIGCHASM" == hazard.code && patchSize >= 5) keepGoing = false;
+                if ("LAVA" == hazard.code && patchSize >= 6) keepGoing = false;
+                if ("RAZORGRASS" == hazard.code && patchSize >= 7) keepGoing = false;
+//if (hazard.code == 'BIGCHASM') console.log("patch iter ", patchSize, ": keep=", keepGoing);
+            } while (len || keepGoing);
+            //*/
+            if (hazard.code == "CHASM" || hazard.code == "RAZORGRASS" || hazard.code == "LAVA") {
+                // make sure the chasm can be crossed with the grapple bow.
+                var fillin = new ROT.Path.AStar2(p1[0], p1[1], function(x,y) {
+                    var t = map.at(x,y);
+                    if (t === undefined || t.solid) return false;
+                    return true;
+                });
+                var len = 0;
+                fillin.compute(p2[0],p2[1], function(x,y) {
+                    var t = map.at(x,y);
+                    if (t !== undefined && t == tiles.CHASM) {
+                        len += 1;
+                        if (len > 3) {
+                            map.write(x,y, tiles.MIDCAVEFLOOR);
+                        }
+                    }
+                });
+            } else if (hazard.code == "BIGCHASM") {
+                // for bigchasm, we need to make a cable.
+                var inChasm = false;
+                var done = false;
+                var post1, post2, prev;
+                var pather = new ROT.Path.AStar2(p1[0], p1[1], passable);
+                prev = p1;
+                // find two edge spots of the chasm and draw a cable between them.
+                pather.compute(p2[0], p2[1], function(x,y) {
+                    if (done) return;
+                    if (!inChasm && map.at(x,y) && map.at(x,y) == tiles.CHASM) {
+                        post1 = prev;
+                        inChasm = true;
+                        map.write(x,y,tiles.CHASMCABLE);
+                    } else if (inChasm && map.at(x,y) && map.at(x,y) == tiles.CHASM) {
+                        map.write(x,y,tiles.CHASMCABLE);
+                    } else if (inChasm && map.at(x,y) && map.at(x,y) != tiles.CHASM) {
+                        post2 = [x,y];
+                        done = true;
+                    }
+                    prev = [x,y];
+                });
+                // put posts at the ends.
+                map.write(post1[0],post1[1], tiles.POST);
+                map.write(post2[0],post2[1], tiles.POST);
             }
-            // find two spots that can see one another on opposite sides of the chasm.
-            // place the cable between those two points.
-        } else if (hazard.name == "chasm") {
+        } else if ([].includes(hazard.code)) {
             // same as above, except we stop at "expand the chasm" and don't make it too big for the grapplebow
+            
         }
+    },
+    addWater: function(map) {
+        // the opposite of the chasms: expand the water as much as we can but without cutting off the path.
+        k = Math.floor(ROT.RNG.getUniform() * 5) + 2;
+        for (i = 0; i < k; i++) {
+            p1 = map.findWalkableSpot();
+            map.write(p1[0],p1[1], tiles.WATER);
+        }
+        var patchSize = 0;
+        var keepGoing;
+        k = Math.floor(ROT.RNG.getUniform() * 5);
+        do {
+            keepGoing = false;
+            var expansion = [];
+            for (j = 0; j < map.h; j++) {
+                for (i = 0; i < map.w; i++) {
+                    var t = map.at(i,j);
+                    if (t !== undefined && t == tiles.WATER) {
+                        map._neighbors(i,j).forEach(function(n) {
+                            if (Math.round(ROT.RNG.getUniform()) == 1) return;
+                            if (n[2] == tiles.MIDCAVEFLOOR)
+                                expansion.push([i+n[0], j+n[1]]);
+                        });
+                    }
+                }
+            }
+            expansion.forEach(function(e) { map.write(e[0],e[1], tiles.WATER); });
+            patchSize++;
+            // only expand a little bit if we're doing a regular chasm.
+            if (patchSize >= k) keepGoing = false;
+        } while (keepGoing);
     },
     makeMiniCave: function(map, x,y,w,h, type) {
         var automaton = new ROT.Map.Cellular((w-2), (h-2)); //, {connected:true});
@@ -149,7 +285,7 @@ var MapGen = {
         var i, j, k, ex;
         var pt, d;
         var tries = 0, reject;
-console.log("CREATE MAP:", def);
+//console.log("=========================\nCREATE MAP:", def);
         var map = this.map = new Map(80,24);
         // set up basics
         map.id = def.id;
@@ -231,32 +367,96 @@ console.log("CREATE MAP:", def);
         }
         this.cellmap = cellmap;
         this.passages = passages;
-console.log("cell map:", cellmap, passages);
+//console.log("cell map:", cellmap, passages);
 //map.exits.push({map_id: map.id, dest: map.id,loc: [0,0]});
-        for (i = 0; i < def.exits.length; i++) {
-            ex = def.exits[i];
-            // create a new exit in the map, far from any other exits if possible.
-            var excell = cellmap.choose();
-            pt = this.findSpotInCell(map, excell);
-            //console.log("putting exit at ", pt);
-            map.write(pt[0], pt[1], tiles.EXIT);
+        // make exit 0 (the entrance to the level).
+        ex = def.exits[0];
+        excell = cellmap.choose();
+        pt = this.findSpotInCell(map, excell);
+        map.write(pt[0], pt[1], tiles.EXIT);
+        map.exits.push({
+            map_id: map.id,
+            dest: ex.toLevel,
+            loc: pt
+        });
+        // if we have a reward, place it.
+        if (def.reward !== undefined) {
+//console.warn('placing reward: ', def.reward);
+            do {
+                var excell = cellmap.choose();
+                pt = this.findSpotInCell(map, excell);
+//console.log("choosing cell: ", excell);
+            } while (excell == this.cellForSpot(map.exits[0].loc) || map.pathDistance(map.exits[0].loc, pt) < 10);
+            //pt = this.findExitSpot(map);
+//console.log("PEDESTAL at ", pt);
+            map.write(pt[0], pt[1], tiles.PEDESTAL);
+            map.placeItem(def.reward, pt[0], pt[1]);
+            map.reward = def.reward;
+        } else if (def.exits.length >= 2) {
+            // if no reward, place the second exit too.
+            ex = def.exits[1];
+            do {
+                var excell = cellmap.choose();
+                pt = this.findSpotInCell(map, excell);
+            } while (excell == this.cellForSpot(map.exits[0].loc) || map.pathDistance(map.exits[0].loc, pt) < 10);
+            map.write(pt[0], pt[1], tiles.STAIRS);
             map.exits.push({
                 map_id: map.id,
                 dest: ex.toLevel,
                 loc: pt
             });
         }
-        if (def.reward !== undefined) {
-            pt = this.findExitSpot(map);
-            map.write(pt[0], pt[1], tiles.PEDESTAL);
-            map.placeItem(def.reward, pt[0], pt[1]);
-            map.reward = def.reward;
-        }
         // draw roadblocks for the map.
         if (def.hazard) {
             this.putRoadblocksOnMap(map, def.hazard);
         }
-console.log(map);
+        // now make the rest of the exits, making sure they end up on the right side of the hazard.
+        for (i = (def.reward !== undefined ? 1 : 2); i < def.exits.length; i++) {
+            ex = def.exits[i];
+            var excell;
+            // create a new exit in the map, far from any other exits if possible.
+            var ok = false;
+            var hazardpath = new ROT.Path.AStar2(map.exits[0].loc[0], map.exits[0].loc[1], function (x,y) {
+                var t = map.at(x,y);
+                if (t === undefined || t.solid) return false;
+                return true;
+            });
+            do {
+                excell = cellmap.choose();
+                pt = this.findSpotInCell(map, excell);
+                ok = true;
+                // if the path to the exit passes over a hazard tile, say no.
+                hazardpath.compute(pt[0], pt[1], function(x,y) {
+                    if (map.at(x,y) === undefined) return;
+                    if (map.at(x,y) == tiles.LAVA) ok = false;
+                    if (map.at(x,y) == tiles.CHASM) ok = false;
+                    if (map.at(x,y) == tiles.RAZORGRASS) ok = false;
+                    if (map.at(x,y) == tiles.POST) ok = false;
+                });
+            } while (!ok);
+            //console.log("putting exit at ", pt);
+            map.write(pt[0], pt[1], tiles.STAIRS);
+            map.exits.push({
+                map_id: map.id,
+                dest: ex.toLevel,
+                loc: pt
+            });
+        }
+        // add water if we need it.
+        if (def.water) {
+//console.log("Adding water: ", map);
+            this.addWater(map);
+        }
+        // scatter some bread.
+        k = Math.floor(ROT.RNG.getUniform() * 10) + 10;
+        for (i = 0; i < k; i++) {
+            var bread = new Item('stale bread');
+            do {
+                pt = map.findWalkableSpot();
+            } while (map.itemAt(pt[0],pt[1]));
+            map.placeItem(bread, pt[0],pt[1]);
+        }
+//console.log(map);
         return map;
     }
 };

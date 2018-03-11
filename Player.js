@@ -7,6 +7,9 @@ function Player(name) {
     document.addEventListener("keydown", this);
     this.sprite = document.createElement('img');
     this.sprite.src = 'duck.png';
+    this.inventory = [];
+    this.armor = null;
+    this.weapon = null;
 }
 Player.prototype = Object.create(Actor.prototype);
 Player.prototype.constructor = Player;
@@ -72,6 +75,13 @@ Player.prototype.prompt = function(obj) {
     var pd = obj;
     this.promptData = pd;
     Message.log(pd.message);
+    if (pd.type == 'target') {
+        pd.x = this.x;
+        pd.y = this.y;
+        pd.render = function(screen) {
+            screen.draw(this.promptData.x + Game.mapRenderPos[0], this.promptData.y + Game.mapRenderPos[1], 'X', 'red');
+        }.bind(this);
+    }
     var prom = new Promise(function(res, rej) {
         pd.resolve = res;
         pd.reject = rej;
@@ -85,6 +95,7 @@ Player.prototype.handleEvent = function(ev) {
         if (ROT[name] == ev.keyCode && name.indexOf("VK_") == 0) vk = name;
     }
     if (this.dead) return;
+    if (Inventory.isOpen) return;
     // prompts can be generated if you need more data to issue a command, like a direction or whatever.
     if (this.promptData !== null) {
         var pd = this.promptData;
@@ -110,6 +121,65 @@ Player.prototype.handleEvent = function(ev) {
                     pd.resolve('southeast'); this.promptData = null; return;
                 } else if ((vk == 'VK_DECIMAL' || vk == 'VK_PERIOD') && pd.allowSelf) {
                     pd.resolve('self'); this.promptData = null; return;
+                }
+            break;
+            case 'target':
+//console.log("vk: ", vk);
+                if (vk == 'VK_W' || vk == 'VK_UP' || vk == 'VK_NUMPAD8') {
+//console.log("north: range ", this.map.pathDistance([pd.x, pd.y-1], [this.x, this.y]) , " <=> ", pd.range);
+                    if (this.map.pathDistance([pd.x, pd.y-1], [this.x, this.y]) <= pd.range) {
+                        pd.y -= 1;
+                        if (pd.y < 0) pd.y = 0;
+                    }
+                    Game.render(); return;
+                } else if (vk == 'VK_S' || vk == 'VK_DOWN' || vk == 'VK_NUMPAD2') {
+                    if (this.map.pathDistance([pd.x, pd.y+1], [this.x, this.y]) <= pd.range) {
+                        pd.y += 1;
+                        if (pd.y > this.map.h - 1) pd.y = this.map.h - 1;
+                    }
+                    Game.render(); return;
+                } else if (vk == 'VK_A' || vk == 'VK_LEFT' || vk == 'VK_NUMPAD4') {
+                    if (this.map.pathDistance([pd.x - 1, pd.y], [this.x, this.y]) <= pd.range) {
+                        pd.x -= 1;
+                        if (pd.x < 0) pd.x = 0;
+                    }
+                    Game.render(); return;
+                } else if (vk == 'VK_D' || vk == 'VK_RIGHT' || vk == 'VK_NUMPAD6') {
+                    if (this.map.pathDistance([pd.x + 1, pd.y], [this.x, this.y]) <= pd.range) {
+                        pd.x += 1;
+                        if (pd.x > this.map.w - 1) pd.x = this.map.w - 1;
+                    }
+                    Game.render(); return;
+                } else if (vk == 'VK_NUMPAD7') {
+                    if (this.map.pathDistance([pd.x - 1, pd.y - 1], [this.x, this.y]) <= pd.range) {
+                        pd.x -= 1; pd.y -= 1;
+                        if (pd.x < 0) pd.x = 0;
+                        if (pd.y < 0) pd.y = 0;
+                    }
+                    Game.render(); return;
+                } else if (vk == 'VK_NUMPAD9') {
+                    if (this.map.pathDistance([pd.x + 1, pd.y - 1], [this.x, this.y]) <= pd.range) {
+                        pd.x += 1; pd.y -= 1;
+                        if (pd.x > this.map.w - 1) pd.x = this.map.w - 1;
+                        if (pd.y < 0) pd.y = 0;
+                    }
+                    Game.render(); return;
+                } else if (vk == 'VK_NUMPAD1') {
+                    if (this.map.pathDistance([pd.x - 1, pd.y + 1], [this.x, this.y]) <= pd.range) {
+                        pd.x -= 1; pd.y += 1;
+                        if (pd.x < 0) pd.x = 0;
+                        if (pd.y > this.map.h - 1) pd.y = this.map.h - 1;
+                    }
+                    Game.render(); return;
+                } else if (vk == 'VK_NUMPAD3') {
+                    if (this.map.pathDistance([pd.x + 1, pd.y + 1], [this.x, this.y]) <= pd.range) {
+                        pd.x += 1; pd.y += 1;
+                        if (pd.x > this.map.w - 1) pd.x = this.map.w - 1;
+                        if (pd.y > this.map.h - 1) pd.y = this.map.h - 1;
+                    }
+                    Game.render(); return;
+                } else if ((vk == 'VK_DECIMAL' || vk == 'VK_PERIOD' || vk == 'VK_ENTER' || vk == 'VK_RETURN')) {
+                    pd.resolve([pd.x,pd.y]); this.promptData = null; return;
                 }
             break;
             // don't know what we're asking for. :O
@@ -149,6 +219,10 @@ Player.prototype.handleEvent = function(ev) {
         this.commands.push({ type: 'move', dir: 'southwest' });
     } else if (vk == 'VK_NUMPAD3') {
         this.commands.push({ type: 'move', dir: 'southeast' });
+    } else if (vk == 'VK_I') {
+        this.commands.push({ type: 'inventory' });
+    } else if (vk == 'VK_F') {
+        this.commands.push({ type: 'fire' });
     } else if (vk == 'VK_C') { // close door
         this.prompt({
             message: "In what direction?",
@@ -171,10 +245,23 @@ Player.prototype.handleEvent = function(ev) {
     }
 };
 //-----------------------
+// api stuff
+Player.prototype.letGo = function(item) {
+    if (this.armor == item) this.armor = null;
+    if (this.weapon == item) this.weapon = null;
+    var idx = this.inventory.findIndex(i => item == i);
+    if (idx >= 0) this.inventory.splice(idx, 1);
+    return item;
+};
+//-----------------------
 // player commands
 Player.prototype.cmd_wait = function(cmd) {
     // stuh!
     return true;
+};
+Player.prototype.cmd_inventory = function(cmd) {
+    Inventory.open();
+    return false;
 };
 Player.prototype.cmd_move = function(cmd) {
     var dx, dy;
@@ -196,12 +283,31 @@ Player.prototype.cmd_move = function(cmd) {
     var itm = this.map.itemAt(this.x,this.y);
     if (itm !== undefined) {
         // TODO: pick up the item instead of just telling you you see it.
-        Message.log("You see here %a%s".format(itm, itm.type.name=="Grapes of Yendor" ? "!":"."));
+        this.map.removeItem(itm);
+        if (itm.type == items.get('stale bread')) {
+            // eat it!
+            Message.log("You eat some stale bread.");
+            this.hp += 10;
+            if (this.hp > this.stats.maxhp) this.hp = this.stats.maxhp;
+        } else if (itm.type == items.get('Grapes of Yendor')) {
+            //TODO: win the game
+        } else {
+            Message.log("You pick up %a.".format(itm));
+            ItemPopup("You got:", itm);
+            this.inventory.push(itm);
+        }
+        //Message.log("You see here %a%s".format(itm, itm.type.name=="Grapes of Yendor" ? "!":"."));
     }
     // look at the square we just moved to and say things if appropriate.
     var t = this.map.at(this.x, this.y);
-    if (t == tiles.EXIT) {
-        Message.log("You see an exit here. Press SPACE to go through.");
+    if (t == tiles.STAIRS || t == tiles.EXIT) {
+        Message.log("You see a staircase here.");
+    } else if (t == tiles.WATER) {
+        Message.log("splish, splish");
+    } else if (t == tiles.PEDESTAL) {
+        Message.log("You see a pedestal here.");
+    } else if (t == tiles.POST) {
+        Message.log("There is a post here, with a cable stretching across the chasm.");
     }
     return true;
 };
@@ -240,13 +346,13 @@ Player.prototype.cmd_close = function(cmd) {
 
 Player.prototype.cmd_exit = function(cmd) {
     var tile = this.map.at(this.x, this.y);
-    if (!tile || tile.name != 'EXIT') {
+    if (!tile || (tile.name != 'EXIT' && tile.name != 'STAIRS')) {
         Message.log('You see no exit here.');
         return false;
     }
     var ex = this.map.exits.find(ex => ex.loc[0] == this.x && ex.loc[1] == this.y);
     if (ex !== undefined) {
-        console.log("DEBUG: exit at: ",this.x,this.y, ex);
+        //console.log("DEBUG: exit at: ",this.x,this.y, ex);
         var destMap = Game.world.findLevelById(ex.dest);
         if (!destMap) {
             Message.log("You can't leave without the Grapes of Yendor.");
@@ -261,4 +367,143 @@ Player.prototype.cmd_exit = function(cmd) {
     }
     console.error("Unknown exit at ",x,y);
     return false;
+};
+
+// "shoot ranged weapon" shortcut.
+Player.prototype.cmd_fire = function(cmd) {
+    var weap = null;
+    weap = this.inventory.find(it => it.type.name == "bow");
+console.log("testing",weap);
+    if (weap === undefined) {
+        weap = this.inventory.find(it => it.type.name == "blowgun");
+    }
+    this.prompt({
+        message: "Where do you want to shoot?",
+        type: 'target',
+        range: weap.type.range
+    }).then(function(tgt) {
+        this.commands.push({ type: 'use', item: weap, target: tgt });
+    }.bind(this));
+};
+
+// generic use command.
+Player.prototype.cmd_use = function(cmd) {
+    console.log("use: ", cmd);
+    if (cmd.item.type.name == 'grapple bow') {
+        var t = this.map.at(cmd.target[0], cmd.target[1]);
+        if (t !== undefined && !t.solid && t != tiles.CHASM && t != tiles.CHASMCABLE) {
+            this.x = cmd.target[0];
+            this.y = cmd.target[1];
+            Message.log("You grapple across.");
+            return true;
+        }
+    } else if (cmd.item.type.name == 'bow' || cmd.item.type.name == 'blowgun') {
+        var other = this.map.mobAt(cmd.target[0], cmd.target[1]);
+        if (!other) {
+            Message.log("Your shot caroms off into the darkness.");
+            return true;
+        }
+        if (other == this) {
+            Message.log("You can't shoot yourself.");
+            return false;
+        }
+        var ammo = null;
+        if (cmd.item.type.name == 'bow') {
+            ammo = this.inventory.find(it => it.type.name == "fire arrows");
+            if (ammo === undefined) {
+                ammo = this.inventory.find(it => it.type.name == "arrows");
+            }
+        }
+//console.log("shoot %s: ", cmd.item.type.name, ammo ? ammo.type.attackBonus : 0, ammo ? ammo.type.damageBonus : 0, cmd.target);
+        var roll = Dice(1,20);
+        roll += this.stats.attack + (cmd.item && cmd.item.type.attackBonus ? cmd.item.type.attackBonus : 0) + (ammo ? ammo.type.attackBonus : 0);
+        if (roll > other.stats.level * 3) {
+            // hit, roll base 1d4 damage
+            roll = Dice(1,4);
+            // add damage bonus if applicable
+            roll += (this.stats.damage ? this.stats.damage : 0) + (cmd.item && cmd.item.type.damageBonus ? cmd.item.type.damageBonus : 0) + (ammo ? ammo.type.damageBonus : 0);
+            // subtract armor.
+            roll -= (other.stats.armor + (other.armor ? other.armor.type.armorValue : 0));
+            if (roll >= other.hp) {
+                ActorMessage(this, "%The %{verb,kill} %the!".format(this, this, other));
+                other.loseHp(roll);
+            } else if (roll <= 0) {
+                ActorMessage(this, "%Your shot glances harmlessly off %the.".format(this, other));
+                // don't bother taking the hit if armor absorbed it all.
+            } else {
+                ActorMessage(this, "%The %{verb,shoot} %the.".format(this, this, other));
+                other.loseHp(roll);
+            }
+        } else {
+            ActorMessage(this, "%The %{verb,miss} %the.".format(this,this, other));
+        }
+        return true;
+    } else if (cmd.item.type.name == "scythe") {
+        Message.log("You swing your scythe.");
+        var didSomething = false;
+        console.log("dir: ", cmd.direction);
+        var pt = {
+            "north": [0,-1], "south": [0,1], "east": [1, 0], "west": [-1, 0],
+            "northeast": [1,-1], "northwest": [-1,-1], "southeast": [1,1], "southwest": [-1,1],
+        }[cmd.direction];
+        console.log("pt:", pt);
+        var t = this.map.at(this.x + pt[0], this.y + pt[1]);
+        if (t && t == tiles.RAZORGRASS) {
+            this.map.write(this.x + pt[0], this.y + pt[1], tiles.MIDCAVEFLOOR);
+            didSomething = true;
+        }
+        if (didSomething) {
+            Message.log("The razorgrass is cut down!");
+        }
+    } else if (cmd.item.type.name == "rubber chicken with a pulley in the middle") {
+        var t = this.map.at(this.x, this.y);
+        if (t !== undefined && t == tiles.POST) {
+            Message.log("You hook your rubber chicken with a pulley in the middle over the cable and glide smoothly across.");
+            var pather = ROT.Path.AStar2(this.x,this.y, function(x,y) {
+                var t = this.map.at(x,y);
+                if (!t || t.solid) return false;
+                if (t != tiles.POST && t != tiles.CHASMCABLE) return false;
+                return true;
+            }.bind(this));
+            var tgtpt, startpt;
+            startpt = [0,0];
+            do {
+                tgtpt = this.map.scanForTile(tiles.POST, startpt);
+                startpt[0] = tgtpt[0]+1;
+                startpt[1] = tgtpt[1];
+            } while (tgtpt[0] == this.x && tgtpt[1] == this.y);
+//console.log("go from ", [this.x,this.y], " to ",tgtpt);
+            this.x = tgtpt[0]; this.y = tgtpt[1];
+            return true;
+        }
+    } else if (cmd.item.type.name == "crowbar") {
+    } else if (cmd.item.type.name == "mirror") {
+    } else if (cmd.item.type.name == "bucket") {
+        var t = this.map.at(this.x, this.y);
+        if (t !== undefined && t == tiles.WATER) {
+            Message.log("You scoop up some water in the bucket.");
+            this.letGo(cmd.item);
+            var res = new Item("water bucket");
+            this.inventory.push(res);
+            ItemPopup("You acquired: ", res);
+        }
+        return true;
+    } else if (cmd.item.type.name == "water bucket") {
+        Message.log("You dump a little of the water out on the floor.");
+        var didSomething = false;
+        [[-1,0],[1,0],[0,-1],[0,1]].forEach(function(pt) {
+            var t = this.map.at(this.x + pt[0], this.y + pt[1]);
+            if (t && t == tiles.LAVA) {
+                this.map.write(this.x + pt[0], this.y + pt[1], tiles.OBSIDIAN);
+                didSomething = true;
+            }
+        }.bind(this));
+        if (didSomething) {
+            Message.log("Some lava solidifies!");
+        }
+        return true;
+    //} else if (cmd.item.type.name == "herring") {
+    }
+    Message.log("That doesn't seem to do anything.");
+    return true;
 };

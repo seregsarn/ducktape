@@ -75,6 +75,13 @@ Actor.prototype.move = function(dx,dy) {
         }
         return false;
     }
+    if (target.name == 'CHASM' || target.name == 'CHASMCABLE') {
+        if (this == Game.player) {
+            Message.log("You can't jump this chasm.");
+        }
+        return false;
+    }
+//*
     var slope = cave_slope_check(this.map.at(this.x, this.y), target);
     if (slope > 0.5) {
         if (this == Game.player) {
@@ -87,6 +94,7 @@ Actor.prototype.move = function(dx,dy) {
         }
         return false;
     }
+//*/
     var other = this.map.mobAt(tx, ty);
     if (other !== undefined) {
         return this.melee(other);
@@ -95,6 +103,21 @@ Actor.prototype.move = function(dx,dy) {
     this.map.updateTile(Game.screen, this.x, this.y);
     this.x = tx; this.y = ty;
     this.render(Game.screen, this.x, this.y);
+    // step effects
+    if (target == tiles.RAZORGRASS) {
+        var shoes = this.armor;
+        if (!shoes) {
+            if (this == Game.player) Message.log("Ouch! You step in razor grass!".format());
+                else ActorMessage(this, "%The %{verb,step} in the razor grass.".format(this,this));
+            this.loseHp(10);
+            if (this.dead) return true;
+        }
+    } else if (target == tiles.LAVA) {
+        if (this == Game.player) Message.log("AUGH! You stepped in lava!");
+            else ActorMessage(this, "%The %{verb,step} in the lava and %{verb,burns}!".format(this,this));
+        this.loseHp(100);
+        if (this.dead) return true;
+    }
     return true;
 };
 
@@ -109,14 +132,14 @@ Actor.prototype.melee = function(other) {
     //ActorMessage(this, "%The %{verb,bump} into %the.".format(this,this,other));
     // TODO: actual combat mechanics
     var roll = Dice(1,20);
-    roll += this.stats.attack;
+    roll += this.stats.attack + (this.weapon ? this.weapon.type.attackBonus : 0);
     if (roll > other.stats.level * 3) {
         // hit, roll base 1d4 damage
         roll = Dice(1,4);
         // add damage bonus if applicable
-        roll += this.stats.damage ? this.stats.damage : 0;
+        roll += (this.stats.damage ? this.stats.damage : 0) + (this.weapon ? this.weapon.type.damageBonus : 0);
         // subtract armor.
-        roll -= other.stats.armor;
+        roll -= (other.stats.armor + (other.armor ? other.armor.type.armorValue : 0));
         if (roll >= other.hp) {
             ActorMessage(this, "%The %{verb,kill} %the!".format(this, this, other));
             other.loseHp(roll);
@@ -136,5 +159,6 @@ Actor.prototype.melee = function(other) {
 Actor.prototype.die = function() {
     this.dead = true;
     this.map.removeMob(this);
+//console.log("dead monster: ", this.id);
     Game.time.remove(this);
 };

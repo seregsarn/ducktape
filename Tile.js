@@ -8,12 +8,20 @@ var tiles = [
     {name: 'VWALL', glyph: '|', color: 'silver', solid: true, opaque: true },
     {name: 'CWALL', glyph: '+', color: 'silver', solid: true, opaque: true },
     {name: 'EXIT', glyph: '<', color: 'silver', solid: false, opaque: false },
+    {name: 'STAIRS', glyph: '>', color: 'silver', solid: false, opaque: false },
     {name: 'PEDESTAL', glyph: 'I', color: 'darkgray', solid: false, opaque: false },
     {name: 'HIGHCAVEFLOOR', glyph: '[', color: 'rgb(144,144,96)', solid: false, opaque: false, altitude: 3 },
     {name: 'HIGHSLOPE', glyph: '{', color: 'rgb(124,124,96)', solid: false, opaque: false, altitude: 2.5 },
     {name: 'MIDCAVEFLOOR', glyph: ':', color: 'rgb(128,128,64)', solid: false, opaque: false, altitude: 2 },
     {name: 'LOWSLOPE', glyph: '}', color: 'rgb(96,96,32)', solid: false, opaque: false, altitude: 1.5 },
     {name: 'LOWCAVEFLOOR', glyph: ']', color: 'rgb(64,64,0)', solid: false, opaque: false, altitude: 1 },
+    {name: 'CHASM', glyph: '.', color: 'rgb(64,64,64)', solid: false, opaque: false, altitude: -1000 },
+    {name: 'CHASMCABLE', glyph: '~', color: 'red', solid: false, opaque: false, altitude: -1000 },
+    {name: 'POST', glyph: '^', color: 'brown', solid: false, opaque: false },
+    {name: 'LAVA', glyph: '~', color: 'orange', solid: false, opaque: false },
+    {name: 'OBSIDIAN', glyph: '~', color: 'rgb(64,64,64)', solid: false, opaque: false },
+    {name: 'WATER', glyph: '~', color: 'blue', solid: false, opaque: false },
+    {name: 'RAZORGRASS', glyph: '/', color: 'rgb(192,255,192)', solid: false, opaque: false },
 ];
 tiles.forEach(function(elt) {
     tiles[elt.name] = elt;

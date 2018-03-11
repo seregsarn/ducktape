@@ -2,111 +2,157 @@ var ItemList = [
     {
         name: 'stale bread',
         adjective: 'scrap of',
-        //glyph: String.fromCodePoint(0x1F956),
+        glyph: String.fromCodePoint(0x1F956),
         //glyph: String.fromCodePoint(0x1F35E),
         //glyph: String.fromCodePoint(0x00B5),
-        glyph: '$',
-        color: 'white',
+        //glyph: '$',
+        color: '#F9E79F',
+        // icon: 'bread', // no need for an icon, it is autoconsumed.
         prob: 5
     },{
         name: 'rope',
         adjective: 'coil of',
         glyph: '\xA7',
         color: 'yellow',
+        icon: 'rope-coil',
         prob: 1
     },{
         name: 'twine',
         adjective: 'length of',
         glyph: '~',
         color: 'white',
+        icon: 'twine',
         prob: 1
     },{
         name: 'stick',
         glyph: '-',
         color: 'brown',
-        prob: 1
+        icon: 'stick',
+        prob: 1,
+        weapon: true,
+        attackBonus: 0,
+        damageBonus: 1,
     },{
         name: 'pole',
         adjective: 'ten foot',
         glyph: '/',
         color: 'brown',
-        prob: 1
+        icon: 'bo',
+        prob: 1,
+        weapon: true,
+        attackBonus: 2,
+        damageBonus: 1,
     },{
         name: 'screwdriver',
         glyph: '\x87',
         color: 'orange',
-        prob: 1
+        icon: 'screwdriver',
+        prob: 1,
+        weapon: true,
+        attackBonus: 1,
+        damageBonus: 1,
     },{
         name: 'knife',
         glyph: '\x86',
         color: 'silver',
-        prob: 1
+        icon: 'knife',
+        prob: 1,
+        weapon: true,
+        attackBonus: 1,
+        damageBonus: 2,
     },{
         name: 'oil',
         adjective: 'can of',
         glyph: '\xAC',
         color: 'darkgray',
-        prob: 1
+        icon: 'oil',
+        prob: 1,
     },{
         name: 'herring',
         glyph: '%',
         color: 'red',
-        prob: 1
+        use: 'direction',
+        icon: 'herring',
+        prob: 1,
     },{
         name: 'crowbar',
         glyph: '\x83',
         color: 'red',
-        prob: 1
+        use: 'direction',
+        icon: 'crowbar',
+        prob: 1,
+        weapon: true,
+        attackBonus: 2,
+        damageBonus: 2,
     },{
         name: 'pipe',
         glyph: '\xA6',
         color: 'silver',
-        prob: 1
+        icon: 'pipe',
+        prob: 1,
+        weapon: true,
+        attackBonus: 2,
+        damageBonus: 1,
     },{
         name: 'lens',
         glyph: ')',
         color: 'lightcyan',
+        icon: 'lens',
         prob: 1
     },{
         name: 'mirror',
         glyph: '\xFE',
         color: 'white',
+        icon: 'mirror',
+        use: 'direction',
         prob: 1
     },{
         name: 'flint',
         glyph: '*',
         color: 'darkgray',
+        icon: 'flint',
         prob: 1
     },{
         name: 'hook',
         glyph: '?',
         color: 'silver',
+        icon: 'hook',
         prob: 1
     },{
         name: 'rubber chicken',
         glyph: '$',
         color: 'lightyellow',
+        icon: 'rubber-chicken',
         prob: 1
     },{
         name: 'pulley',
         glyph: '0',
         color: 'silver',
+        icon: 'pulley',
         prob: 1
     },{
         name: 'bucket',
         glyph: '\xFB',
         color: 'grey',
+        use: 'instant',
+        icon: 'bucket',
         prob: 1
     },{ // only get the water bucket by filling a regular bucket
         name: 'water bucket',
         glyph: '\xFB',
         color: 'blue',
-        prob: 0
+        prob: 0,
+        use: 'instant',
+        icon: 'bucket-water',
+        recipe: ['bucket', 'water']
     },{
         name: 'shoes',
         glyph: '&',
         color: 'green',
-        prob: 1
+        icon: 'boots',
+        prob: 1,
+        armor: true,
+        armorValue: 1,
 /*
     },{
         name: 'helmet',
@@ -116,99 +162,145 @@ var ItemList = [
 */
 //=======================
 // crafted items
+/*
     },{
         name: 'piton',
         glyph: '^',
         color: 'blue',
         recipe: ['stick', 'knife']
+*/
     },{
         name: 'arrows',
+        adjective: 'quiver of',
         glyph: '^',
         color: 'brown',
-        recipe: ['stick', 'flint']
+        icon: 'arrow',
+        recipe: ['stick', 'flint'],
+        attackBonus: 0,
+        damageBonus: 1,
     },{
         name: 'torch',
         adjective: 'oil-soaked',
         glyph: '\xCE',
         color: 'brown',
+        icon: 'torch',
         recipe: ['stick', 'oil']
     },{
         name: 'bow',
         glyph: ')',
         color: 'brown',
-        recipe: ['stick', 'twine']
+        icon: 'bow',
+        recipe: ['stick', 'twine'],
+        use: 'target',
+        range: 6,
+        attackBonus: 1,
+        damageBonus: 3,
     },{
         name: 'spear',
         glyph: '/',
         color: 'red',
-        recipe: ['pole', 'knife']
+        icon: 'spear',
+        recipe: ['pole', 'knife'],
+        weapon: true,
+        attackBonus: 1,
+        damageBonus: 3,
     },{
         name: 'grappling hook',
         glyph: '?',
         color: 'gold',
+        icon: 'grapple',
         recipe: ['rope', 'hook']
     },{
         name: 'grapple bow',
         glyph: ')',
         color: 'gold',
-        recipe: ['grappling hook', 'bow']
-    },{
+        recipe: ['grappling hook', 'bow'],
+        use: 'target',
+        range: 5,
+/*    },{
         name: 'catchpole',
         glyph: 'P',
         color: 'brown',
         recipe: ['pole', 'rope']
+*/
+/*
     },{
         name: 'ladder',
         //glyph: '\xB6',
         glyph: 'H',
         color: 'brown',
+        icon: 'ladder',
         recipe: ['stick', 'pole']
+*/
     },{
         name: 'long range screwdriver',
         glyph: '!',
         color: 'orange',
-        recipe: ['screwdriver', 'pole']
+        recipe: ['screwdriver', 'pole'],
+        weapon: true,
+        attackBonus: 2,
+        damageBonus: 1,
     },{
         name: 'telescope',
         glyph: '!',
         color: 'gold',
+        icon: 'spyglass',
         recipe: ['pipe', 'lens']
     },{
         name: 'periscope',
         glyph: '\xED',
         color: 'white',
+        icon: '',
         recipe: ['mirror', 'pole']
     },{
         name: 'blowgun',
         glyph: '/',
         color: 'silver',
-        recipe: ['pipe', 'arrows']
+        icon: '',
+        recipe: ['pipe', 'arrows'],
+        use: 'target',
+        range: 6,
     },{
         name: 'fire arrows',
         glyph: '/',
         color: 'silver',
-        recipe: ['oil', 'arrows']
-    },{
+        icon: 'flaming-arrow',
+        recipe: ['oil', 'arrows'],
+        attackBonus: 0,
+        damageBonus: 3,
+/*    },{
         name: 'climbing shoes',
         glyph: ']',
         color: 'green',
-        recipe: ['piton', 'shoes']
+        icon: 'climb-boot',
+        recipe: ['piton', 'shoes'],
+        armor: true,
+        armorValue: 2,
+*/
     },{
         name: 'scythe',
         glyph: '7',
         color: 'brown',
-        recipe: ['hook', 'pole']
+        icon: 'scythe',
+        recipe: ['hook', 'pole'],
+        weapon: true,
+        attackBonus: 1,
+        damageBonus: 3,
+        use: 'direction',
+/*
     },{
         name: 'rope ladder',
         //glyph: '\xB6',
         glyph: 'H',
         color: 'white',
         recipe: ['piton', 'rope']
+*/
     },{
         name: 'rubber chicken with a pulley in the middle',
         glyph: '%',
         color: 'lightyellow',
-        recipe: ['rubber chicken', 'pulley']
+        recipe: ['rubber chicken', 'pulley'],
+        use: 'instant'
     },{
         name: 'Grapes of Yendor',
         //glyph: '%',
@@ -235,6 +327,10 @@ var items = {
         var deps = [];
         if (t.recipe !== undefined) {
             for (r = 0; r < t.recipe.length; r++) {
+                if (t.recipe[r] == 'water') {
+                    deps.push('water');
+                    continue;
+                }
                 var rr = items.get(t.recipe[r]);
                 if (rr === undefined) console.error('unimplemented dependency: ', t.name, " depends on ",r, t.recipe[r], ", which doesn't exist");
                 //console.log('deps: ', rr);
@@ -244,6 +340,20 @@ var items = {
             deps.push(t);
         }
         return deps;
+    },
+    combine: function(i1, i2) {
+        var i;
+//console.log("items: ",i1,i2);
+        for (i = 0; i < ItemList.length; i++) {
+            var res = ItemList[i];
+            if (res.artifact) continue;
+            if (res.recipe === undefined) continue;
+//console.log("recipe: ",res.recipe);
+            if (!res.recipe.includes(i1.type.name) || !res.recipe.includes(i2.type.name)) continue;
+            // found the recipe!
+            return res;
+        }
+        return null;
     }
 };
 ItemList.forEach(function(it, idx) {

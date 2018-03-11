@@ -32,7 +32,10 @@ Map.prototype.updateFov = function(actor) {
     this.fovMap = {};
     this.mobs.forEach(m => m.visible = false);
     this.items.forEach(it => it.visible = false);
-    this.fov.compute(actor.x, actor.y, Game.VISION_RADIUS, function(x,y,r,vis) {
+    var rad = 2;
+    var light = Game.player.inventory.find(it => it.type.name == 'torch');
+    if (light !== undefined) rad = 10;
+    this.fov.compute(actor.x, actor.y, rad, function(x,y,r,vis) {
         inst.fovMap[x+','+y] = [r,vis];
         // check for visible mobs
         var m = inst.mobAt(x,y);
@@ -181,6 +184,7 @@ Map.prototype.findWalkableSpot = function() {
         x = Math.round(ROT.RNG.getUniform() * this.w);
         y = Math.round(ROT.RNG.getUniform() * this.h);
         t = this.at(x,y);
+        if (t == tiles.CHASM || t == tiles.CHASMCABLE) t = undefined;
     } while (tries++ < 1000 && (t === undefined || t.solid));
     if (tries < 1000) return [x,y];
     return undefined;
@@ -193,6 +197,18 @@ Map.prototype.findLocation = function(tile) {
         y = Math.round(ROT.RNG.getUniform() * this.h);
     } while (tries++ < 100 && this.at(x,y) != tile);
     return [x,y];
+};
+Map.prototype.scanForTile = function(target, startPt) {
+    var x, y, t;
+    if (startPt === undefined) startPt = [0,0];
+    for (x = startPt[0]; x < this.w; x++) {
+        for (y = startPt[1]; y < this.h; y++) {
+            t = this.at(x,y);
+            if (t != target) continue;
+            return [x,y];
+        }
+    }
+    return null;
 };
 Map.prototype.pathDistance = function(p1, p2) {
     var self = this;
