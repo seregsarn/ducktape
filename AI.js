@@ -6,11 +6,6 @@ var AI = {
             dy = Math.round(ROT.RNG.getUniform() * 2) - 1;
         } while (dx == 0 && dy == 0);
         this.move(dx, dy);
-        //*
-        if (ROT.RNG.getPercentage() > 50) {
-            ActorMessage(this, "%The %{verb,yelp}!".format(this, this));
-        }
-        //*/
         return true;
     },
     seek_player: function() {

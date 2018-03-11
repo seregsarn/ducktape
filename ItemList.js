@@ -215,6 +215,7 @@ var ItemList = [
         glyph: ')',
         color: 'gold',
         recipe: ['grappling hook', 'bow'],
+        icon: 'grapple-bow',
         use: 'target',
         range: 5,
 /*    },{
@@ -300,6 +301,7 @@ var ItemList = [
         glyph: '%',
         color: 'lightyellow',
         recipe: ['rubber chicken', 'pulley'],
+        icon: 'rubber-chicken-with-a-pulley-in-the-middle',
         use: 'instant'
     },{
         name: 'Grapes of Yendor',

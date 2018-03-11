@@ -150,7 +150,7 @@ var Inventory = {
 				this.player.weapon = itm;
 			}
 			this.updateList();
-		} else if (ev.keyCode == ROT.VK_ESCAPE) { // cancel
+		} else if (ev.keyCode == ROT.VK_ESCAPE || ev.keyCode == ROT.VK_I) { // cancel
 			this.close();
 		}
 		Game.render();

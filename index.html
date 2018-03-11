@@ -3,6 +3,7 @@
 <head>
     <title>Duck Tape Hero</title>
     <!--<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>-->
+    <link rel="StyleSheet" href="ducktape.css">
     <script src="vendor/jquery-3.3.1.min.js"></script>
     <script src="vendor/jquery-ui.min.js"></script>
     <script src="rotjs/rot.js"></script>
@@ -23,102 +24,20 @@
     <script src="Player.js"></script>
     <script src="Game.js"></script>
     <script src="Message.js"></script>
-    <style>
-        body {
-        	//background: rgb(124,124,124);
-        	background: rgb(0,0,0);
-        	font-family: 'Arial', sans-serif;
-        	text-align: center;
-        }
-        #inventoryWindow {
-        	display: none;
-        	font-size: 10pt;
-        	padding: 5px 20px;
-        	border: 1px solid black;
-        	position: fixed;
-        	left: 50%;
-        	top: 30%;
-        	margin-left: -250px;
-        	margin-top: -150px;
-        	border-radius: 5px;
-        	background: silver;
-        }
-        #itemList {
-        	width: 500px;
-        	min-height: 200px;
-        	border: 1px inset;
-        	border-radius: 5px;
-        	background: darkgrey;
-        	list-style: none;
-        	padding: 0px;
-        	text-align: left;
-        }
-        #itemList li {
-        	padding: 2px 10px;
-        	font-size: 12pt;
-        	font-weight: bold;
-        	user-select: none;
-        	-webkit-user-select: none;
-        	-moz-user-select: none;
-        }
-        #itemList li.selected {
-        	background: blue;
-        	color: white;
-        }
-        #itemList li img {
-        	width: 32px;
-        	height: 32px;
-        	margin-right: 10px;
-        	vertical-align: middle;
-        	border-radius: 5px;
-        }
-        .slot {
-        	display: inline-block;
-        	float: left;
-        	width: 64px;
-        	height: 64px;
-        	border: 1px solid black;
-        	border-radius: 10px;
-        }
-        .slot.disabled {
-        	opacity: 0.5;
-        }
-        .slot.error {
-        	background: url('assets/cancel.png');
-        }
-        .slot img {
-        	width: 64px;
-        	height: 64px;
-        	border-radius: 10px;
-        }
-        #itemPopup {
-        	display: none;
-        	font-size: 12pt;
-        	padding: 20px 20px;
-        	border: 1px solid black;
-        	border-radius: 5px;
-        	background: silver;
-        	position: fixed;
-        	left: 50%;
-        	top: 50%;
-        	margin-left: -200px;
-        	margin-top: -50px;
-        	width: 400px;
-        }
-        #itemPopup div { text-align: center; }
-        #itemPopup span { font-weight: bold; }
-        #itemPopup img {
-        	width: 64px;
-        	height: 64px;
-        	vertical-align: middle;
-        	border: 1px solid black;
-        	border-radius: 5px;
-        	margin-right: 10px;
-        }
-        #itemPopup .two { display: none; }
-    </style>
+    <script src="MainMenu.js"></script>
+    <script src="Help.js"></script>
 </head>
-<body onload="Game.init()">
+<body onload="MainMenu.init()">
+	<div id="mainMenu">
+	    <h1>Duc<span class="alternate"><span class="alt1">k</span><span class="alt2">t</span></span> Tape Hero</h1>
+        <p>Are you a bad enough duck to find some grapes?</p>
+	    <input id="nameInput" placeholder="Please enter your name." size="15" style="width: 300px;">
+        <button id="playBtn"> Play </button> 
+	</div>
+	<div id="helpText">
+        <iframe src="help.html" style="width: 600px; height: 100vh; border: none;"></iframe>
+        <div id="helpTab">?: Help/About</div>
+	</div>
 	<div id="inventoryWindow">
 		Inventory
 		<ul id="itemList">
@@ -145,10 +64,14 @@
 		<div style="clear: both; height: 10px;"></div>
 	</div>
 	<div id="itemPopup">
-		<div><img class="one"><img class="two"><div> <span></span>
+		<div><img class="one"><img class="two"> <span></span></div>
 	</div>
-	<div id="helpText">
-		
+	<div id="victoryScreen">
+	    <img src="assets/grapes-of-yendor.png" width="128" height="128">
+	    <h1> VICTORY! </h1>
+	    <p> You braved the Darkness Below and retrieved the Grapes of Yendor for your people. </p>
+	    <p> The name of <span id="victoryName">NAME</span> will be remembered forever as a hero to all Anatidae.</p>
+	    <p> Congratulations! </p>
 	</div>
 </body>
 </html>

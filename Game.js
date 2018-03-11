@@ -31,7 +31,13 @@ var Game = {
     player: null,
     itemPopup: null,
     // ------------
-    init: function() {
+    shutdown: function() {
+        $(this.screen.getContainer()).remove();
+        $(Message.historyWindow.getContainer()).remove();
+        //console.log("gone");
+        MainMenu.show();
+    },
+    init: function(name) {
         this.itemPopup = $('#itemPopup');
         this.time = new ROT.Scheduler.Speed();
         this.engine = new ROT.Engine(this.time);
@@ -43,6 +49,7 @@ var Game = {
             //forceSquareRatio: true,
         });
         document.body.appendChild(this.screen.getContainer());
+        Message.empty();
         Message.screen = this.screen;
         Message.historyWindow = new ROT.Display({
             width: 100,
@@ -52,30 +59,16 @@ var Game = {
         });
         document.body.appendChild(document.createElement('br'));
         document.body.appendChild(Message.historyWindow.getContainer());
-        this.world = new Dungeon(2); // 5
-//console.log("======================");
-//console.log("this.world: ", this.world.areas);
-//console.log("start at ", this.world.startAt);
+        this.world = new Dungeon(5);
         this.map = this.world.findLevelById(this.world.startAt);
         //this.map = this.world.areas[0];
-this.world.areas.forEach(m => m.magicMap());
-        this.player = new Player('thp');
+//this.world.areas.forEach(m => m.magicMap());
+        this.player = new Player(name);
         this.time.add(this.player, true);
         var spot = this.map.exits.find(ex => ex.dest == -1).loc;
         this.map.putMob(this.player,spot[0],spot[1]);
-//for (i = 0; i < 20; i++) this.player.inventory.push(new Item());
-//this.player.inventory.push(new Item("knife"));
-//this.player.inventory.push(new Item("bow"));
-//this.player.inventory.push(new Item("knife"));
-this.player.inventory.push(new Item("rubber chicken with a pulley in the middle"));
-this.player.inventory.push(new Item("grapple bow"));
-//this.player.inventory.push(new Item("pole"));
-//this.player.inventory.push(new Item("rope"));
-//this.player.inventory.push(new Item("hook"));
-//this.player.inventory.push(new Item("stick"));
-//this.player.inventory.push(new Item("flint"));
-this.player.inventory.push(new Item("water bucket"));
         Inventory.init(this.player);
+//this.map.placeItem(new Item("Grapes of Yendor"), spot[0]-1, spot[1]);
         // run the engine loop
         this.engine.start();
         Message.log('Hello '+ this.player.name +', welcome to Duck Tape Hero!');
@@ -93,10 +86,11 @@ this.player.inventory.push(new Item("water bucket"));
         var weap = "Weapon: %S; Armor: %S".format(this.player.weapon ? this.player.weapon.type.name : "None", this.player.armor ? this.player.armor.type.name : "None");
         this.screen.drawText(80 - weap.length, 26, weap);
         // "HP: " + this.player.hp + "/" + this.player.stats.maxhp + " ");
-        this.screen.drawText(80 - this.map.name.length,25, this.map.name);
+        var name = this.map.name + ", depth " + this.map.depth;
+        this.screen.drawText(80 - name.length,25, name);
         var t = this.map.at(this.player.x, this.player.y);
         if (t && (t == tiles.EXIT || t == tiles.STAIRS)) {
-            this.screen.drawText(30, 25, "SPACE: Take the stairs.")
+            this.screen.drawText(20, 25, "SPACE: Take the stairs.")
         }
     }
 };

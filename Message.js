@@ -4,6 +4,9 @@ var Message = {
     history: [],
     historySize: 25,
     isMore: false,
+    empty: function() {
+        this.history = [];
+    },
     expire: function() {
         this.history.forEach(function(elt) {
             elt.persist = false;
@@ -24,22 +27,23 @@ var Message = {
         if (this.history.length > this.historySize) this.history.shift();
     },
     more: function() {
-        // TODO: implement a "--More--" type function
         this.isMore = true;
         Game.render();
         Game.engine.lock();
-        document.addEventListener('keydown', function(ev) {
+        var moreHandler = function(ev) {
             //console.log('More:', ev);
             if (ev.keyCode == ROT.VK_SPACE || ev.keyCode == ROT.VK_RETURN || ev.keyCode == ROT.VK_ENTER) {
+                this.isMore = false;
+                document.removeEventListener('keydown', moreHandler);
                 if (Game.player.dead) {
                     // STUH!
                     Game.screen.clear();
                 } else {
                     Game.engine.unlock();
-                    this.isMore = false;
                 }
             }
-        });
+        }.bind(this);
+        document.addEventListener('keydown', moreHandler);
     },
     render: function() {
         if (this.history.length < 1) return;

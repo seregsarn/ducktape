@@ -1,0 +1,240 @@
+
+@font-face {
+    font-family: 'Batmos';
+    src:  url('assets/Batmos-Regular.ttf.woff') format('woff'),
+    url('assets/Batmos-Regular.ttf.svg#Batmos-Regular') format('svg'),
+    url('assets/Batmos-Regular.ttf.eot'),
+    url('assets/Batmos-Regular.eot?#iefix') format('embedded-opentype'); 
+    font-weight: normal;
+    font-style: normal;
+}
+body {
+    background: rgb(0,0,0);
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+}
+#inventoryWindow {
+    display: none;
+    font-size: 10pt;
+    padding: 5px 20px;
+    border: 1px solid black;
+    position: fixed;
+    left: 50%;
+    top: 30%;
+    margin-left: -250px;
+    margin-top: -150px;
+    border-radius: 5px;
+    background: silver;
+}
+#itemList {
+    width: 500px;
+    min-height: 200px;
+    border: 1px inset;
+    border-radius: 5px;
+    background: darkgrey;
+    list-style: none;
+    padding: 0px;
+    text-align: left;
+}
+#itemList li {
+    padding: 2px 10px;
+    font-size: 12pt;
+    font-weight: bold;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+#itemList li.selected {
+    background: blue;
+    color: white;
+}
+#itemList li img {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+    vertical-align: middle;
+    border-radius: 5px;
+}
+.slot {
+    display: inline-block;
+    float: left;
+    width: 64px;
+    height: 64px;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+.slot.disabled {
+    opacity: 0.5;
+}
+.slot.error {
+    background: url('assets/cancel.png');
+}
+.slot img {
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+}
+#itemPopup {
+    display: none;
+    font-size: 12pt;
+    padding: 20px 20px;
+    border: 1px solid black;
+    border-radius: 5px;
+    background: silver;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    margin-left: -200px;
+    margin-top: -50px;
+    width: 400px;
+}
+#itemPopup div { text-align: center; }
+#itemPopup span { font-weight: bold; }
+#itemPopup img {
+    width: 64px;
+    height: 64px;
+    vertical-align: middle;
+    border: 1px solid black;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+#itemPopup .two { display: none; }
+
+#victoryScreen {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    margin-left: -300px; margin-top: -225px;
+    width: 600px;
+    height: 450px;
+    background: black;
+    color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    font-size: 16pt;
+    box-shadow: 0px 0px 50px 5px green;
+}
+@keyframes sparkle {
+    0% { color: red; }
+    10% { color: orange; }
+    20% { color: yellow; }
+    30% { color: lightgreen; }
+    40% { color: green; }
+    50% { color: cyan; }
+    60% { color: blue; }
+    70% { color: violet; }
+    80% { color: magenta; }
+    90% { color: white; }
+    100% { color: red; }
+}
+#victoryScreen h1 { animation: sparkle 1s infinite; }
+#victoryScreen #victoryName { animation: sparkle 2s infinite; }
+#victoryScreen p {
+    text-align: left;
+    padding: 0px 1em;
+}
+#mainMenu {
+    position: fixed;
+    left: 50%; top: 25%;
+    margin-top: -50px;
+    margin-left: -335px;
+    width: 669px; height: 100px;
+    border: 1px outset;
+    border-radius: 10px;
+    background: silver;
+    background: url('assets/pitduck.png') no-repeat silver;
+    padding-top: 504px;
+    color: black;
+}
+#mainMenu h1 {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    margin-top: 0px;
+    font-family: 'Batmos', sans-serif;
+    font-size: 64pt;
+    font-weight: bold;
+    color: linear-gradient(silver, darkgrey);
+}
+#mainMenu button {
+    padding: 0.5em 2em;
+    border-radius: 10px;
+}
+#mainMenu button:focus { outline: none; background: #ddffdd; }
+
+#helpText {
+    position: fixed;
+    right: 0px;
+    top: 0px;
+    height: 100vh;
+    width: 0px;
+//    width: 600px;
+    border: 1px solid black;
+}
+.help {
+    background: #333333;
+    color: #eeffee;
+}
+.help a { color: #aaffaa; }
+.help a:visited { color: #66ff66; }   
+.help .credits {
+    font-size: 10pt;
+    font-weight: normal;
+    text-align: center;
+}
+.help p {
+    text-align: left;
+    text-indent: 2em;
+}
+.help blockquote {
+    width: 500px;
+    font-style: italic;
+    text-align: left;
+    margin: auto;
+}
+.help span.key {
+    font-family: 'Courier New', 'Courier', monospaced;
+    font-weight: bold;
+    color: #00ff00;
+}
+#helpTab {
+    position: absolute;
+    left: 0px; top: 100px;
+    margin-left: -80px;
+    width: 140px;
+    font-size: 12pt;
+    font-weight: bold;
+    background: silver;
+    color: black;
+    border: 1px solid black;
+    border-bottom: none;
+    border-radius: 5px 5px 0px 0px;
+    -webkit-transform: rotate(-90deg);
+}
+@keyframes toggle1 {
+    0% { opacity: 1.0; }
+    90% { opacity: 1.0; }
+    100% { opacity: 0.0; }
+}
+@keyframes toggle2 {
+    0% { opacity: 0.0; }
+    90% { opacity: 0.0; }
+    100% { opacity: 1.0; }
+}
+.alternate {
+    position: relative;
+    display: inline-block;
+    width: 0.4em;
+    height: 0.9em;
+}
+.alt1 {
+    position: absolute;
+    left: 0; top: 0;
+    animation: toggle1 5s infinite;
+}
+.alt2 {
+    position: absolute;
+    left: 0; top: 0;
+    animation: toggle2 5s infinite;
+}

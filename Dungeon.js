@@ -72,14 +72,15 @@ function Dungeon(numAreas) {
     setDepths(map, 1);
     // populate the world
     this.areas.forEach(function(m, idx) {
+//console.log("populating ", m.name, ", depth ", m.depth);
         k = Math.floor(ROT.RNG.getUniform() * 10) + 5;
         for (i = 0; i < k; i++) {
-if (idx == 1) console.log("make monster #", i, " for level ", m.id, " (depth ", m.depth, ")");
             var mon = new Actor(monsters.random(m.depth));
+//console.log("made %a for level %s/%s ".format(mon, m.id, m.depth));
             do {
-                pt = map.findWalkableSpot();
-            } while (map.mobAt(pt[0],pt[1]));
-            map.putMob(mon, pt[0],pt[1]);
+                pt = m.findWalkableSpot();
+            } while (m.mobAt(pt[0],pt[1]));
+            m.putMob(mon, pt[0],pt[1]);
             Game.time.add(mon, true);
         }
     });

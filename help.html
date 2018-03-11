@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Duck Tape Hero</title>
+    <link rel="StyleSheet" href="ducktape.css">
+</head>
+<body class="help">
+<h1> DUCK TAPE HERO </h1>
+<blockquote>
+    There is a place in the wilderness, far from any lake or pond. A deep place, hidden within the earth, where dark creatures lurk.
+    Among the Anatidae, it is known as the Darkness Below. Eons ago, the dark god of the hominids stole the Grapes of Yendor from the creator,
+    and fled to the Darkness Below with it. It is spoken in whispers that one day, a brave hero, barely a hatchling, will enter the Darkness
+    Below and return with the Grapes to lead the Anatidae to greatness.<br><br>
+    
+    Now, that time has come. You, a flightless youngling barely out of his first molting, were turned down by the Elders when you petitioned
+    for permission to raid the Darkness Below. Spurning their cowardice, you set out for the dungeon with only your trusty roll of duct tape
+    to defend yourself. Your mission: To survive the dungeon, find the Grapes of Yendor, and escape with your life.
+</blockquote>
+<hr>
+<h2> Intro </h2>
+<p> Welcome to Duck Tape Hero, my 7DRL for 2018! In this roguelike, you take on the role of a heroic duck and delve a dungeon for the
+legendary Grapes of Yendor. You do this by collecting items and using duct tape to assemble them into useful tools.</p>
+<p> As I often do, I bit off way more than I could reasonably chew this year: A plan which sounded simple at first but turned out to be overly
+ambitious, plus picking up a new framework/library (<a href="http://ondras.github.io/rot.js/hp/">rot.js</a>) to boot. In order to get the game
+completed in the available time for the 7drl, I had to cut an awful lot of content I had planned, so this game is a bit thin on the ground.
+Someday I might come back and extend it with all the stuff I intended to make but didn't have time for.</p>
+
+<h2> How to Play </h2>
+<p> You can move your duck around the dungeon with the numpad. (The arrow keys and WASD will also work, but you won't be able to move diagonally
+with just those.) Most actions are context-aware, and are described by the user interface. For example, when you stand on a staircase, the game
+will prompt you to press <span class="key">Space</span> to go down it.</p>
+<p> Pressing <span class="key">I</span> will open your inventory screen. This screen lets you view all your items and use your duct tape to
+assemble and dismantle useful tools. Use the arrow keys or numpad to select an item from the list, and then press one of the action keys.</p>
+<ul>
+    <li>Pressing <span class="key">C</span> will load the item into the "duct tape" box at the bottom of the inventory window. To combine two
+        items, combine each in turn. If your combination is successful, you'll get a notification of the new item.</li>
+    <li>Press <span class="key">X</span> to try and dismantle the item into its component parts, if it is built of smaller items.</li>
+    <li>Press <span class="key">E</span> to equip weapons or armor, which contributes to your combat skills.</li>
+    <li>Press <span class="key">Enter</span> to use the selected item. The effects will vary by item-- some items can't be used at all, while
+        some might require a target or a direction.</li>
+</ul>
+<p>As a convenient shorthand, pressing <span class="key">F</span> is a shortcut key with automatically shoots with the most powerful ranged weapon you have,
+just as if you had selected the item in the inventory screen and pressed Enter to use it.</p>
+<hr>
+<div class="credits">
+    &copy;2018 thp (Gregory Torbenson)<br>
+    Most icons &copy; <a target="_blank" href="http://game-icons.net">game-icons.net</a> under <a target="_blank" href="https://creativecommons.org/licenses/by/3.0/">CC-BY-3.0</a>.<br>
+    Additional art by <a target="_blank" href="http://shoddy.work/">graa</a> and <a target="_blank" href="http://seregsarn.net/blog/">thp</a><br>
+</div>
+</body>
+</html>

@@ -5,8 +5,8 @@ function Player(name) {
     this.stall = null;
     this.promptData = null;
     document.addEventListener("keydown", this);
-    this.sprite = document.createElement('img');
-    this.sprite.src = 'duck.png';
+    //this.sprite = document.createElement('img');
+    //this.sprite.src = 'duck.png';
     this.inventory = [];
     this.armor = null;
     this.weapon = null;
@@ -94,7 +94,12 @@ Player.prototype.handleEvent = function(ev) {
     for (var name in ROT) {
         if (ROT[name] == ev.keyCode && name.indexOf("VK_") == 0) vk = name;
     }
-    if (this.dead) return;
+    if (this.dead || this.win) {
+//console.log("endgame");
+        document.removeEventListener('keydown', this);
+        Game.shutdown();
+        return;
+    }
     if (Inventory.isOpen) return;
     // prompts can be generated if you need more data to issue a command, like a direction or whatever.
     if (this.promptData !== null) {
@@ -237,9 +242,9 @@ Player.prototype.handleEvent = function(ev) {
             else Message.log('Never mind.');
         });
         */
-    } else if ((vk == 'VK_SLASH' && ev.shiftKey) || vk == 'VK_F1') { // halp
-        if (vk == 'VK_F1') ev.preventDefault();
-        Message.log("FIXME: help screen");
+//    } else if ((vk == 'VK_SLASH' && ev.shiftKey) || vk == 'VK_F1') { // halp
+//        if (vk == 'VK_F1') ev.preventDefault();
+//        Message.log("FIXME: help screen");
     } else {
 //console.log("VK: ",vk);
     }
@@ -287,10 +292,13 @@ Player.prototype.cmd_move = function(cmd) {
         if (itm.type == items.get('stale bread')) {
             // eat it!
             Message.log("You eat some stale bread.");
-            this.hp += 10;
+            this.hp += 8 + Math.floor((ROT.RNG.getUniform() * 4));
             if (this.hp > this.stats.maxhp) this.hp = this.stats.maxhp;
         } else if (itm.type == items.get('Grapes of Yendor')) {
-            //TODO: win the game
+            Message.log("You got the Grapes of Yendor!");
+            Message.more();
+            this.win = true;
+            MainMenu.victoryScreen.show();
         } else {
             Message.log("You pick up %a.".format(itm));
             ItemPopup("You got:", itm);
@@ -373,9 +381,13 @@ Player.prototype.cmd_exit = function(cmd) {
 Player.prototype.cmd_fire = function(cmd) {
     var weap = null;
     weap = this.inventory.find(it => it.type.name == "bow");
-console.log("testing",weap);
+//console.log("testing",weap);
     if (weap === undefined) {
         weap = this.inventory.find(it => it.type.name == "blowgun");
+    }
+    if (weap === undefined) {
+        Message.log("You don't have anything to shoot.");
+        return false;
     }
     this.prompt({
         message: "Where do you want to shoot?",
@@ -388,13 +400,18 @@ console.log("testing",weap);
 
 // generic use command.
 Player.prototype.cmd_use = function(cmd) {
-    console.log("use: ", cmd);
+    //console.log("use: ", cmd);
     if (cmd.item.type.name == 'grapple bow') {
         var t = this.map.at(cmd.target[0], cmd.target[1]);
         if (t !== undefined && !t.solid && t != tiles.CHASM && t != tiles.CHASMCABLE) {
-            this.x = cmd.target[0];
-            this.y = cmd.target[1];
-            Message.log("You grapple across.");
+            if (this.map.mobAt(cmd.target[0], cmd.target[1]) !== undefined) {
+                // TODO: attack with grapple bow?
+                //console.log("mob: ",
+            } else {
+                var dif = [cmd.target[0] - this.x, cmd.target[1] - this.y];
+                Message.log("You grapple across.");
+                this.move(dif[0], dif[1]);
+            }
             return true;
         }
     } else if (cmd.item.type.name == 'bow' || cmd.item.type.name == 'blowgun') {
@@ -441,12 +458,12 @@ Player.prototype.cmd_use = function(cmd) {
     } else if (cmd.item.type.name == "scythe") {
         Message.log("You swing your scythe.");
         var didSomething = false;
-        console.log("dir: ", cmd.direction);
+        //console.log("dir: ", cmd.direction);
         var pt = {
             "north": [0,-1], "south": [0,1], "east": [1, 0], "west": [-1, 0],
             "northeast": [1,-1], "northwest": [-1,-1], "southeast": [1,1], "southwest": [-1,1],
         }[cmd.direction];
-        console.log("pt:", pt);
+        //console.log("pt:", pt);
         var t = this.map.at(this.x + pt[0], this.y + pt[1]);
         if (t && t == tiles.RAZORGRASS) {
             this.map.write(this.x + pt[0], this.y + pt[1], tiles.MIDCAVEFLOOR);
