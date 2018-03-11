@@ -32,7 +32,7 @@ Map.prototype.updateFov = function(actor) {
     this.fovMap = {};
     this.mobs.forEach(m => m.visible = false);
     this.items.forEach(it => it.visible = false);
-    var rad = 2;
+    var rad = 10; // TODO: 2 unless light source
     var light = Game.player.inventory.find(it => it.type.name == 'torch');
     if (light !== undefined) rad = 10;
     this.fov.compute(actor.x, actor.y, rad, function(x,y,r,vis) {

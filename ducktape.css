@@ -198,6 +198,13 @@ body {
     font-weight: bold;
     color: #00ff00;
 }
+.help ul, .help ul li {
+    text-align: left;
+}
+.help .symbol {
+    font-family: 'Courier New', 'Courier', monospaced;
+    background: black;
+}
 #helpTab {
     position: absolute;
     left: 0px; top: 100px;
@@ -211,6 +218,10 @@ body {
     border-bottom: none;
     border-radius: 5px 5px 0px 0px;
     -webkit-transform: rotate(-90deg);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    cursor: pointer;
 }
 @keyframes toggle1 {
     0% { opacity: 1.0; }

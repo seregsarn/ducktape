@@ -144,7 +144,8 @@ Actor.prototype.melee = function(other) {
             ActorMessage(this, "%The %{verb,kill} %the!".format(this, this, other));
             other.loseHp(roll);
         } else if (roll <= 0) {
-            ActorMessage(this, "%Your attack glances harmlessly off %the.".format(this, other));
+            if (other == Game.player) ActorMessage(this, "%Your attack rolls right off %your back.".format(this, other));
+            else ActorMessage(this, "%Your attack glances harmlessly off %the.".format(this, other));
             // don't bother taking the hit if armor absorbed it all.
         } else {
             ActorMessage(this, "%The %{verb,hit} %the.".format(this, this, other));
