@@ -94,7 +94,8 @@ Player.prototype.handleEvent = function(ev) {
     for (var name in ROT) {
         if (ROT[name] == ev.keyCode && name.indexOf("VK_") == 0) vk = name;
     }
-    if (this.dead || this.win) {
+    if (Message.isMore && !(ev.keyCode == ROT.VK_SPACE || ev.keyCode == ROT.VK_ENTER || ev.keyCode == ROT.VK_RETURN)) return; // don't do anything while more()ing
+    if ((this.dead || this.win) && (ev.keyCode == ROT.VK_SPACE || ev.keyCode == ROT.VK_ENTER || ev.keyCode == ROT.VK_RETURN)) {
 //console.log("endgame");
         document.removeEventListener('keydown', this);
         Game.shutdown();
@@ -245,6 +246,11 @@ Player.prototype.handleEvent = function(ev) {
 //    } else if ((vk == 'VK_SLASH' && ev.shiftKey) || vk == 'VK_F1') { // halp
 //        if (vk == 'VK_F1') ev.preventDefault();
 //        Message.log("FIXME: help screen");
+    } else if ((vk == 'VK_8' && ev.shiftKey) || vk == 'VK_ASTERISK' || vk == 'VK_MULTIPLY') { // toggle emoji
+        Game.useEmoji = !Game.useEmoji;
+        Message.log("Emoji graphics %s.".format(Game.useEmoji ? "on":"off"));
+        Game.render();
+        return false;
     } else {
 //console.log("VK: ",vk);
     }
@@ -475,7 +481,6 @@ Player.prototype.cmd_use = function(cmd) {
     } else if (cmd.item.type.name == "rubber chicken with a pulley in the middle") {
         var t = this.map.at(this.x, this.y);
         if (t !== undefined && t == tiles.POST) {
-            Message.log("You hook your rubber chicken with a pulley in the middle over the cable and glide smoothly across.");
             var pather = ROT.Path.AStar2(this.x,this.y, function(x,y) {
                 var t = this.map.at(x,y);
                 if (!t || t.solid) return false;
@@ -488,8 +493,10 @@ Player.prototype.cmd_use = function(cmd) {
                 tgtpt = this.map.scanForTile(tiles.POST, startpt);
                 startpt[0] = tgtpt[0]+1;
                 startpt[1] = tgtpt[1];
+                if (tgtpt == null) return false;
             } while (tgtpt[0] == this.x && tgtpt[1] == this.y);
 //console.log("go from ", [this.x,this.y], " to ",tgtpt);
+            Message.log("You hook your rubber chicken with a pulley in the middle over the cable and glide smoothly across.");
             this.x = tgtpt[0]; this.y = tgtpt[1];
             return true;
         }

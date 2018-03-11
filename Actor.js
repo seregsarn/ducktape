@@ -26,7 +26,7 @@ Actor.prototype.act = function() {
 };
 // draw functions
 Actor.prototype.render = function(display,x,y) {
-    display.draw(x,y, this.type.glyph, this.type.color, this.type.background);
+    display.draw(x,y, ((Game.useEmoji && this.type.emojiGlyph !== undefined) ? this.type.emojiGlyph : this.type.glyph), this.type.color, this.type.background);
 };
 // text formatting
 Actor.prototype.a = function() {

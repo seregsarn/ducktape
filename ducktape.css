@@ -201,9 +201,11 @@ body {
 .help ul, .help ul li {
     text-align: left;
 }
-.help .symbol {
+span.symbol {
     font-family: 'Courier New', 'Courier', monospaced;
     background: black;
+    margin: 2px;
+    height: 1.3em;
 }
 #helpTab {
     position: absolute;

@@ -1,13 +1,17 @@
 var MainMenu = {
     menuDiv: null,
     playBtn: null,
+    emojiBtn: null,
     nameBox: null,
     permittedChars: "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.,!1234567890",
     victoryScreen: null,
+    emoji: false,
     init: function() {
+        emoji = false;
         this.menuDiv = $('#mainMenu');
         this.nameBox = $('#nameInput', this.menuDiv);
         this.playBtn = $('#playBtn', this.menuDiv);
+        this.emojiBtn = $('#emojiBtn', this.menuDiv);
         this.victoryScreen = $('#victoryScreen');
         //this.victoryScreen.show();
         this.nameBox.on('keypress', this.textkey.bind(this));
@@ -15,6 +19,8 @@ var MainMenu = {
         this.nameBox.on('keyup', this.nameChange.bind(this));
         this.menuDiv.on('focus', function(ev) { MainMenu.nameBox.focus(); });
         this.playBtn.on('click', this.startGame.bind(this));
+        this.emojiBtn.on('click', this.emojiToggle.bind(this));
+        this.updateEmoji();
         this.show();
     },
     show: function() {
@@ -48,8 +54,24 @@ var MainMenu = {
         }
     },
     startGame: function(ev) {
-        Game.init(this.nameBox.val());
+        Game.init(this.nameBox.val(), this.emoji);
         $('#victoryName', this.victoryScreen).html(this.nameBox.val());
         this.hide();
+    },
+    updateEmoji: function() {
+        var me = monsters.player_dummy;
+        var grapes = items.get("Grapes of Yendor");
+        var bread = items.get("stale bread");
+        var key = 'glyph';
+        if (this.emoji) key = 'emojiGlyph';
+        this.emojiBtn.empty();
+        this.emojiBtn.append('<span class="symbol" style="color: white;">' + me[key] + "</span>");
+        this.emojiBtn.append('<span class="symbol" style="color: purple;">' + grapes[key] + "</span>");
+        this.emojiBtn.append('<span class="symbol" style="color: #F9E79F;">' + bread[key] + "</span>");
+        this.emojiBtn.append('Emoji ' + (this.emoji ? "on" : "off"));
+    },
+    emojiToggle: function(ev) {
+        this.emoji = !this.emoji;
+        this.updateEmoji();
     }
 };

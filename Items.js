@@ -24,6 +24,6 @@ Item.prototype.the = function() {
     return 'the ' + nm;
 };
 Item.prototype.render = function(display,x,y) {
-    display.draw(x,y, this.type.glyph, this.type.color, this.type.background);
+    display.draw(x,y, (Game.useEmoji && this.type.emojiGlyph ? this.type.emojiGlyph : this.type.glyph), this.type.color, this.type.background);
 };
 

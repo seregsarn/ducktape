@@ -1,8 +1,8 @@
 var monsters = [
     {
         name: 'player_dummy',
-        //glyph: '@',
-        glyph: String.fromCodePoint(0x1F986),
+        glyph: 'd',
+        emojiGlyph: String.fromCodePoint(0x1F986),
         color: 'white',
         background: 'blue',
         flags: ['open_doors'],

@@ -2,10 +2,10 @@ var ItemList = [
     {
         name: 'stale bread',
         adjective: 'scrap of',
-        glyph: String.fromCodePoint(0x1F956),
-        //glyph: String.fromCodePoint(0x1F35E),
-        //glyph: String.fromCodePoint(0x00B5),
-        //glyph: '$',
+        glyph: '%',
+        emojiGlyph: String.fromCodePoint(0x1F956),
+        //emojiGlyph: String.fromCodePoint(0x1F35E),
+        //emojiGlyph: String.fromCodePoint(0x00B5),
         color: '#F9E79F',
         // icon: 'bread', // no need for an icon, it is autoconsumed.
         prob: 5
@@ -305,9 +305,9 @@ var ItemList = [
         use: 'instant'
     },{
         name: 'Grapes of Yendor',
-        //glyph: '%',
-        glyph: '\x89',
-        //glyph: String.fromCodePoint(0x1f347),
+        glyph: '%',
+        //glyph: '\x89',
+        emojiGlyph: String.fromCodePoint(0x1f347),
         color: 'magenta',
         artifact: true
     }

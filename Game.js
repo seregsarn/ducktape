@@ -30,6 +30,7 @@ var Game = {
     mapRenderPos: [0,1],
     player: null,
     itemPopup: null,
+    useEmoji: false,
     // ------------
     shutdown: function() {
         $(this.screen.getContainer()).remove();
@@ -37,7 +38,8 @@ var Game = {
         //console.log("gone");
         MainMenu.show();
     },
-    init: function(name) {
+    init: function(name, emoji) {
+        this.useEmoji = emoji;
         this.itemPopup = $('#itemPopup');
         this.time = new ROT.Scheduler.Speed();
         this.engine = new ROT.Engine(this.time);
