@@ -251,6 +251,11 @@ Player.prototype.handleEvent = function(ev) {
         Message.log("Emoji graphics %s.".format(Game.useEmoji ? "on":"off"));
         Game.render();
         return false;
+    } else if (ev.keyCode == ROT.VK_F10) { // SECRET DEBUG KEY
+        Message.log("SECRET DEBUG KEY!");
+        this.map.magicMap();
+        Game.render();
+        return false;
     } else {
 //console.log("VK: ",vk);
     }
@@ -491,9 +496,14 @@ Player.prototype.cmd_use = function(cmd) {
             startpt = [0,0];
             do {
                 tgtpt = this.map.scanForTile(tiles.POST, startpt);
+                if (tgtpt == null) {
+                    Console.error("Unknown error, POST not found; please send a screenshot :(");
+                    Message.log("Dear player: This is a softlock that sometimes happens. I don't know why but I put this in here to help me diagnose it. Love, thp <3");
+                    this.map.magicMap();
+                    return false;
+                }
                 startpt[0] = tgtpt[0]+1;
                 startpt[1] = tgtpt[1];
-                if (tgtpt == null) return false;
             } while (tgtpt[0] == this.x && tgtpt[1] == this.y);
 //console.log("go from ", [this.x,this.y], " to ",tgtpt);
             Message.log("You hook your rubber chicken with a pulley in the middle over the cable and glide smoothly across.");

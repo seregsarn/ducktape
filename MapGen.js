@@ -421,19 +421,22 @@ var MapGen = {
                 if (t === undefined || t.solid) return false;
                 return true;
             });
+            var tries = 0;
             do {
                 excell = cellmap.choose();
                 pt = this.findSpotInCell(map, excell);
                 ok = true;
+                if (map.at(pt[0], pt[1]) != tiles.MIDCAVEFLOOR) continue; // if there's already something there, then no way.
                 // if the path to the exit passes over a hazard tile, say no.
                 hazardpath.compute(pt[0], pt[1], function(x,y) {
                     if (map.at(x,y) === undefined) return;
                     if (map.at(x,y) == tiles.LAVA) ok = false;
                     if (map.at(x,y) == tiles.CHASM) ok = false;
+                    if (map.at(x,y) == tiles.CHASMCABLE) ok = false;
                     if (map.at(x,y) == tiles.RAZORGRASS) ok = false;
                     if (map.at(x,y) == tiles.POST) ok = false;
                 });
-            } while (!ok);
+            } while (!ok && ++tries < 1000);
             //console.log("putting exit at ", pt);
             map.write(pt[0], pt[1], tiles.STAIRS);
             map.exits.push({
@@ -448,12 +451,12 @@ var MapGen = {
             this.addWater(map);
         }
         // scatter some bread.
-        k = Math.floor(ROT.RNG.getUniform() * 10) + 10;
+        k = Math.floor(ROT.RNG.getUniform() * 10) + 3;
         for (i = 0; i < k; i++) {
             var bread = new Item('stale bread');
             do {
                 pt = map.findWalkableSpot();
-            } while (map.itemAt(pt[0],pt[1]));
+            } while (map.itemAt(pt[0],pt[1]) || map.at(pt[0],pt[1]) != tiles.MIDCAVEFLOOR);
             map.placeItem(bread, pt[0],pt[1]);
         }
 //console.log(map);
